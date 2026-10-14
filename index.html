@@ -211,6 +211,39 @@ ul.clean, ol.clean { margin: 0; padding-left: 1.2em; display: grid; gap: 4px; }
 footer { border-top: 1px solid var(--line); color: var(--muted); font-size: 0.85rem; }
 footer .wrap { padding-block: 18px 32px; display: grid; gap: 4px; }
 .warn { color: var(--bad); }
+
+/* Duo-style: stats, lesson path, one-question quiz with check bar */
+.stats { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.stat { font: 800 0.9rem var(--display); padding: 4px 10px; border-radius: 99px; background: var(--sunk); font-variant-numeric: tabular-nums; }
+.stat.fire { color: #d9730d; } .stat.xp { color: var(--accent); }
+.trail { display: grid; gap: 18px; justify-items: center; padding-block: 8px; }
+.node { display: grid; justify-items: center; gap: 6px; max-width: 220px; text-align: center; }
+.node:nth-child(4n+2) { transform: translateX(-60px); } .node:nth-child(4n+4) { transform: translateX(60px); }
+@media (max-width: 420px) { .node:nth-child(4n+2) { transform: translateX(-36px); } .node:nth-child(4n+4) { transform: translateX(36px); } }
+.dot { width: 76px; height: 76px; border-radius: 50%; border: 0; display: grid; place-items: center; font: 800 1.6rem var(--display); cursor: pointer; background: var(--accent); color: var(--on-accent); box-shadow: 0 6px 0 color-mix(in srgb, var(--accent) 60%, #000); }
+.dot:active { transform: translateY(4px); box-shadow: 0 2px 0 color-mix(in srgb, var(--accent) 60%, #000); }
+.dot svg { width: 30px; height: 30px; }
+.node.done .dot { background: var(--good); box-shadow: 0 6px 0 color-mix(in srgb, var(--good) 60%, #000); }
+.node.lock .dot { background: var(--sunk); color: var(--muted); box-shadow: 0 6px 0 var(--line); cursor: not-allowed; }
+.node.cur .dot { width: 92px; height: 92px; outline: 5px solid var(--accent-soft); outline-offset: 4px; }
+.node .lbl { font-weight: 700; font-size: 0.95rem; line-height: 1.25; }
+.node .sub { font-size: 0.8rem; color: var(--muted); }
+.node.lock .lbl { color: var(--muted); }
+.bubble { font: 800 0.8rem var(--mono); letter-spacing: 0.08em; background: var(--surface); color: var(--accent); border: 2px solid var(--accent); border-radius: 10px; padding: 3px 10px; }
+.qtop { display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; }
+.qbar { height: 14px; background: var(--sunk); border-radius: 99px; overflow: hidden; }
+.qbar i { display: block; height: 100%; background: var(--good); border-radius: 99px; transition: width .3s; }
+.one .q { border: 0; background: none; padding: 0; }
+.one .q .prompt { font-size: 1.3rem; }
+.one .q .fb { display: none; }
+.checkbar { border-radius: 14px; padding: 16px; display: grid; gap: 10px; background: var(--sunk); }
+.checkbar.right { background: var(--good-soft); color: var(--good); }
+.checkbar.wrong { background: var(--bad-soft); color: var(--bad); }
+.checkbar h3 { font-size: 1.25rem; }
+.checkbar .btn { width: 100%; }
+.checkbar.right .btn { background: var(--good); border-color: var(--good); }
+.checkbar.wrong .btn { background: var(--bad); border-color: var(--bad); }
+.partok { color: var(--good); font-weight: 700; } .partbad { color: var(--bad); font-weight: 700; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
 </head>
@@ -219,7 +252,7 @@ footer .wrap { padding-block: 18px 32px; display: grid; gap: 4px; }
 <header class="top">
   <div class="wrap">
     <button class="logo" type="button" data-go="home">Mein <span>Deutsch</span>weg</button>
-    <span class="save-note" id="saveNote">Progress saved in this browser</span>
+    <div class="stats"><span class="stat fire" id="streak" title="Days in a row">🔥 0</span><span class="stat xp" id="xp" title="Experience points">0 XP</span><span class="save-note" id="saveNote">Progress saved in this browser</span></div>
   </div>
 </header>
 <main><div class="wrap" id="view"></div></main>
@@ -541,15 +574,25 @@ function speak(text, btn, r) {
 const spellText = name => [...name.toLowerCase()].map(c => LETTERS[c] || c).join(". ") + ".";
 
 /* PROGRESS — this browser + the viewer's private store in their account */
-let P = { done: {}, exams: {} };
+let P = { done: {}, exams: {}, xp: 0, streak: 0, day: "" };
 function merge(a, b) {
-  const out = { done: Object.assign({}, a.done || {}, b.done || {}), exams: Object.assign({}, a.exams || {}) };
+  const out = { done: Object.assign({}, a.done || {}, b.done || {}), exams: Object.assign({}, a.exams || {}), xp: Math.max(a.xp || 0, b.xp || 0) };
+  const late = (b.day || "") > (a.day || "") ? b : a;
+  out.day = late.day || ""; out.streak = late.streak || 0;
   for (const [k, e] of Object.entries(b.exams || {})) {
     const x = out.exams[k] || {};
     out.exams[k] = { best: Math.max(x.best || 0, e.best || 0), passed: !!(x.passed || e.passed), last: e.last ?? x.last ?? 0 };
   }
   return out;
 }
+const dayKey = d => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+function liveStreak() { const y = new Date(); y.setDate(y.getDate() - 1); return P.day === dayKey(new Date()) || P.day === dayKey(y) ? P.streak || 0 : 0; }
+function award(xp) {
+  const today = dayKey(new Date());
+  if (P.day !== today) { P.streak = liveStreak() + 1; P.day = today; }
+  P.xp = (P.xp || 0) + xp;
+}
+function stats() { const s = document.getElementById("streak"), x = document.getElementById("xp"); if (s) s.textContent = "🔥 " + liveStreak(); if (x) x.textContent = (P.xp || 0) + " XP"; }
 try { const x = JSON.parse(localStorage.getItem("dw-progress") || "null"); if (x) P = merge(P, x); } catch (e) {}
 try { const old = JSON.parse(localStorage.getItem("dw-done") || "null"); if (old) P = merge(P, { done: old }); } catch (e) {}
 let remoteRef = null, saveTimer = null;
@@ -557,7 +600,7 @@ function save() {
   try { localStorage.setItem("dw-progress", JSON.stringify(P)); } catch (e) {}
   if (!remoteRef) return;
   clearTimeout(saveTimer);
-  saveTimer = setTimeout(() => { remoteRef.set({ done: P.done, exams: P.exams, updatedAt: Date.now() }).catch(() => {}); }, 700);
+  saveTimer = setTimeout(() => { remoteRef.set({ done: P.done, exams: P.exams, xp: P.xp || 0, streak: P.streak || 0, day: P.day || "", updatedAt: Date.now() }).catch(() => {}); }, 700);
 }
 (async () => {
   if (!window.claude || !window.claude.use) return;
@@ -574,12 +617,16 @@ function save() {
     document.getElementById("saveNote").textContent = "Progress saved to your account";
     const changed = JSON.stringify(P) !== before;
     if (!snap.exists || changed) save();
+    if (changed) stats();
     if (changed && (V.name === "home" || V.name === "level")) render();
   } catch (e) {}
 })();
 const passed = lk => !!(P.exams[lk] && P.exams[lk].passed);
 const unlocked = lk => { const i = ORDER.indexOf(lk); return i === 0 || passed(ORDER[i - 1]); };
 const doneCount = lk => LEVELS[lk].units.filter((_, i) => P.done[lk + "-" + (i + 1)]).length;
+// A lesson opens only when the one before it is passed (80% in its quiz). The exam opens when every lesson is passed.
+const lessonOpen = (lk, ui) => unlocked(lk) && (passed(lk) || ui === 0 || !!P.done[lk + "-" + ui]);
+const examOpen = lk => unlocked(lk) && (passed(lk) || doneCount(lk) === LEVELS[lk].units.length);
 
 /* QUESTIONS (lesson quiz + exams) */
 let qSeq = 0;
@@ -592,6 +639,7 @@ function translateQ(v, pool) {
   const same = pool.filter(x => x.en === v.en && isNoun(x)).map(x => x.w);
   return textQ(`Write in German with der / die / das: “${v.en}”`, same.length ? same : [v.w], { show: v.w });
 }
+const empty = a => a === undefined || a === null || (typeof a === "string" && !a.trim()) || (Array.isArray(a) && !a.length);
 function grade(q, a) {
   if (q.type === "mc") return a === q.ans;
   if (q.type === "order") return Array.isArray(a) && q.accept.some(x => norm(x) === norm(a.map(i => q.tokens[i]).join(" ")));
@@ -665,9 +713,9 @@ function homeHTML() {
   return `<div class="title"><span class="eyebrow">Free German course · A1 → B2</span><h1>Learn German step by step</h1></div>
   ${nextBox}
   <div class="how">
-    <div><span class="n">1</span><h3>Do the lessons</h3><p>Each lesson has 5 short steps: words, grammar, sentences, writing, quiz.</p></div>
-    <div><span class="n">2</span><h3>Take the level exam</h3><p>Read, fill in the gaps, listen and spell, write.</p></div>
-    <div><span class="n">3</span><h3>Score 80% to move up</h3><p>Pass and the next level opens. Didn't pass? Practise and try again.</p></div>
+    <div><span class="n">1</span><h3>Pass each lesson</h3><p>Learn, then answer 10 questions. Get 8 right (80%) to open the next lesson.</p></div>
+    <div><span class="n">2</span><h3>Pass the level exam</h3><p>4 parts: read, fill in the gaps, listen and spell, write.</p></div>
+    <div><span class="n">3</span><h3>80% in every part</h3><p>Pass all 4 parts and the next level opens. If you don't, practise and try again.</p></div>
   </div>
   <div class="title"><h2>Your levels</h2></div>
   <div class="path">${cards}</div>
@@ -681,21 +729,25 @@ function homeHTML() {
 
 function levelHTML(lk) {
   const L = LEVELS[lk], E = P.exams[lk];
-  const rows = L.units.map((u, i) => {
-    const d = !!P.done[lk + "-" + (i + 1)];
-    return `<div class="lrow${d ? " done" : ""}"><span class="num">${d ? "✓" : i + 1}</span><div style="min-width:0"><h3>${esc(u.t)}</h3><p>${esc(u.s)} · ${u.v.length} words</p></div>
-      <button class="btn${d ? " ghost" : ""}" type="button" data-lesson="${lk}:${i}">${d ? "Review" : "Start"}</button></div>`;
+  const cur = L.units.findIndex((_, i) => !P.done[lk + "-" + (i + 1)]);
+  const nodes = L.units.map((u, i) => {
+    const d = !!P.done[lk + "-" + (i + 1)], open = lessonOpen(lk, i), isCur = i === cur && open;
+    const cls = d ? "done" : open ? (isCur ? "cur" : "") : "lock";
+    return `<div class="node ${cls}">${isCur ? `<span class="bubble">START</span>` : ""}
+      <button class="dot" type="button" ${open ? `data-lesson="${lk}:${i}"` : "disabled"} aria-label="Lesson ${i + 1}: ${esc(u.t)}${d ? " (passed)" : open ? "" : " (locked)"}">${d ? "✓" : open ? i + 1 : LOCK}</button>
+      <span class="lbl">${i + 1}. ${esc(u.t)}</span><span class="sub">${d ? (typeof P.done[lk + "-" + (i + 1)] === "number" && P.done[lk + "-" + (i + 1)] > 1 ? "Passed · " + P.done[lk + "-" + (i + 1)] + "%" : "Passed") : open ? u.v.length + " words" : "Pass lesson " + i + " first"}</span></div>`;
   }).join("");
+  const exOpen = examOpen(lk);
+  const exNode = `<div class="node ${E && E.passed ? "done" : exOpen ? "cur" : "lock"}">${exOpen && !(E && E.passed) ? `<span class="bubble">EXAM</span>` : ""}
+    <button class="dot" type="button" ${exOpen ? `data-exam="${lk}"` : "disabled"} aria-label="${L.name} exam">${exOpen ? "🏆" : LOCK}</button>
+    <span class="lbl">${L.name} exam</span><span class="sub">${E ? "Best: " + E.best + "%" + (E.passed ? " · passed" : "") : exOpen ? "4 parts · 20–30 min" : "Pass all lessons first"}</span></div>`;
   const nextL = L.next ? LEVELS[L.next].name : null;
   return `<button class="back" type="button" data-go="home">← All levels</button>
   <div class="title"><span class="eyebrow">Level ${L.name} · ${L.units.length} lessons · ${L.hours}</span><h1>${esc(L.title)}</h1></div>
-  <div class="todo"><b>What to do</b><p>Do the lessons from top to bottom. Each one takes 1 to 3 days. When you finish them all, take the exam at the bottom.</p></div>
+  <div class="todo"><b>What to do</b><p>Press the big circle to start. Each lesson ends with 10 questions: get <b>8 right (80%)</b> to open the next lesson. When all lessons are green, the exam opens. ${nextL ? `To open ${nextL}, you need ${PASS_MARK}% in <b>each</b> of the 4 exam parts.` : ""}</p></div>
   <details class="can"><summary>What you'll be able to do after ${L.name}</summary><ul>${L.can.map(c => `<li>${esc(c)}</li>`).join("")}</ul></details>
-  <div class="lessons">${rows}</div>
-  <div class="examcard"><span class="eyebrow">Final step</span><h3>${L.name} exam</h3>
-    <p>4 parts: read, fill in the gaps, listen and spell, write. About 20–30 minutes. ${nextL ? `Score <b>${PASS_MARK}% or more</b> to unlock ${nextL}.` : `Score <b>${PASS_MARK}% or more</b> to finish the course.`}</p>
-    ${E ? `<p>Your best score: <b>${E.best}%</b> ${E.passed ? `<span class="pill ok">Passed</span>` : ""}</p>` : ""}
-    <div><button class="btn big" type="button" data-exam="${lk}">${E ? "Take the exam again" : "Start the exam"}</button></div></div>`;
+  <div class="bar"><i style="width:${doneCount(lk) / L.units.length * 100}%"></i></div>
+  <div class="trail">${nodes}${exNode}</div>`;
 }
 
 const STEPS = ["Words", "Grammar", "Sentences", "Writing", "Quiz"];
@@ -706,7 +758,34 @@ function makePractice(lk, ui) {
   pick(vs.filter(spellable), 2).forEach(v => qs.push(listenWordQ(v)));
   const ph = u.p.map(p => p[0]).filter(s => !/[…\/]/.test(s) && s.split(" ").length <= 9);
   if (ph.length) { const s = pick(ph, 1)[0]; qs.push(orderQ(s.replace(/[.!?,]/g, "").split(" "), [s], "Build the sentence: tap the words in the right order.")); }
-  return { qs, ans: {}, checked: false };
+  const used = new Set(qs.map(q => q.prompt));
+  pick(vs.filter(v => !used.has(`What does “${v.w}” mean?`)), 10 - qs.length).forEach(v => {
+    const wrong = pick(vs.filter(x => x.w !== v.w && x.en !== v.en), 2).map(x => x.w);
+    qs.push(mcQ(`How do you say “${v.en}” in German?`, [v.w, ...wrong]));
+  });
+  return { qs: shuffle(qs), i: 0, ans: {}, res: {}, phase: "q" };
+}
+const quizRight = () => PR.qs.filter(q => PR.res[q.id]).length;
+const quizNeed = () => Math.ceil(PR.qs.length * PASS_MARK / 100);
+function quizHTML(lk, ui) {
+  const n = PR.qs.length, L = LEVELS[lk];
+  if (PR.phase === "end") {
+    const right = quizRight(), pct = Math.round(right / n * 100), ok = right >= quizNeed();
+    const wrong = PR.qs.filter(q => !PR.res[q.id]);
+    const nxt = ui + 1 < L.units.length ? `<button class="btn big" type="button" data-lesson="${lk}:${ui + 1}">Next lesson →</button>` : `<button class="btn big" type="button" data-exam="${lk}">Start the ${L.name} exam →</button>`;
+    return `<div class="score ${ok ? "pass" : "fail"}"><span class="eyebrow">Lesson ${ui + 1} result</span><div class="big">${right} / ${n}</div>
+      <h2>${ok ? `Lesson passed! +${right * 2 + 10} XP` : `Not passed yet. You need ${quizNeed()} of ${n}.`}</h2>
+      <p>${ok ? (ui + 1 < L.units.length ? `Lesson ${ui + 2} is now open.` : `All lessons done. The ${L.name} exam is now open.`) : `Go back to the words (step 1), then try again. The questions change each time.`}</p>
+      <div class="row">${ok ? nxt : `<button class="btn big" type="button" data-newquiz="1">Try again</button><button class="btn ghost" type="button" data-step="0">Review the words</button>`}</div></div>
+      ${wrong.length ? `<div class="title"><h2>Your mistakes</h2></div><div class="qlist">${wrong.map((q, k) => qHTML(q, k + 1, PR.ans[q.id], true)).join("")}</div>` : ""}`;
+  }
+  const q = PR.qs[PR.i], fb = PR.phase === "fb", ok = fb && PR.res[q.id];
+  return `<div class="qtop"><div class="qbar"><i style="width:${(PR.i + (fb ? 1 : 0)) / n * 100}%"></i></div><span class="eyebrow">${PR.i + 1} / ${n}</span></div>
+    <div class="one">${qHTML(q, PR.i + 1, PR.ans[q.id], fb)}</div>
+    <div class="checkbar${fb ? (ok ? " right" : " wrong") : ""}">
+      ${fb ? `<h3>${ok ? "Richtig! Correct!" : "Not correct"}</h3>${ok ? "" : `<p>Correct answer: <b>${esc(correctText(q))}</b></p>`}
+        <button class="btn big" type="button" data-qnext="1">Continue</button>`
+      : `<p class="hint" id="qwarn">Answer the question, then press Check.</p><button class="btn big" type="button" data-qcheck="1">Check</button>`}</div>`;
 }
 function lessonHTML() {
   const { lk, ui, step } = V, L = LEVELS[lk], u = L.units[ui], id = lk + "-" + (ui + 1);
@@ -739,14 +818,12 @@ function lessonHTML() {
       <p class="hint">Want corrections? Paste your text into <a href="https://languagetool.org/" target="_blank" rel="noopener">LanguageTool</a>, or send it to a free tutor on the <a href="https://www.vhs-lernportal.de/" target="_blank" rel="noopener">VHS-Lernportal</a>.</p>`;
   } else {
     if (!PR || PR.key !== id) PR = Object.assign(makePractice(lk, ui), { key: id });
-    const right = PR.checked ? PR.qs.filter(q => grade(q, PR.ans[q.id])).length : 0, good = right / PR.qs.length >= 0.8;
-    todo = "Answer all the questions, then press “Check my answers”. Look at your mistakes, then press “Finish lesson”.";
-    body = `<div class="qlist">${PR.qs.map((q, i) => qHTML(q, i + 1, PR.ans[q.id], PR.checked)).join("")}</div>
-      ${PR.checked ? `<div class="score ${good ? "pass" : "fail"}"><span class="eyebrow">Quiz result</span><div class="big">${right} / ${PR.qs.length}</div><p>${good ? "Great job! You're ready for the next lesson." : "Go back to step 1 and review the words, then try a new quiz. You can also finish the lesson now."}</p><div class="row"><button class="btn ghost" type="button" data-newquiz="1">Try a new quiz</button></div></div>` : `<div><button class="btn big" type="button" data-check="practice">Check my answers</button></div>`}`;
+    todo = `One question at a time. Answer, then press <b>Check</b>. Get <b>${quizNeed()} of ${PR.qs.length}</b> right to pass this lesson and open the next one.`;
+    body = quizHTML(lk, ui);
   }
   const isLast = step === STEPS.length - 1;
-  const nav = `<div class="navbar">${step > 0 ? `<button class="btn ghost" type="button" data-step="${step - 1}">← Back</button>` : `<span></span>`}
-    ${isLast ? (PR && PR.checked ? `<button class="btn big" type="button" data-finish="${lk}:${ui}">Finish lesson ✓</button>` : `<span></span>`) : `<button class="btn big" type="button" data-step="${step + 1}">Next: ${STEPS[step + 1]} →</button>`}</div>`;
+  const nav = isLast ? "" : `<div class="navbar">${step > 0 ? `<button class="btn ghost" type="button" data-step="${step - 1}">← Back</button>` : `<span></span>`}
+    <button class="btn big" type="button" data-step="${step + 1}">Next: ${STEPS[step + 1]} →</button></div>`;
   return `<button class="back" type="button" data-level="${lk}">← ${L.name} lessons</button>
     <div class="title"><span class="eyebrow">${L.name} · Lesson ${ui + 1} of ${L.units.length}</span><h1>${esc(u.t)}</h1></div>
     ${stepper}<div class="todo"><b>Step ${step + 1} of 5: what to do</b><p>${todo}</p></div>${body}${nav}`;
@@ -764,7 +841,7 @@ function buildExam(lk) {
   }
   const write = [...pick(nouns, 6).map(v => translateQ(v, vocab)), ...X.order.map(([t, a]) => orderQ(t, a))];
   return {
-    lk, idx: -1, ans: {}, done: false,
+    lk, idx: -1, ans: {}, done: false, checked: {},
     secs: [
       { name: "Lesen", en: "Read", todo: "Read the text carefully. Then choose the right answer for each question.", text: X.read, qs: X.readQ.map(([q, o]) => mcQ(q, o)) },
       { name: "Lücken", en: "Fill in the blanks", todo: "Choose or type the word that fits the gap (___). The word in brackets tells you which verb or form to use.", qs: [...X.fillMc.map(([q, o]) => mcQ(q, o)), ...X.fillType.map(([q, a]) => textQ(q, a))] },
@@ -779,36 +856,42 @@ function examHTML() {
     const tot = E.secs.reduce((s, x) => s + x.qs.length, 0);
     return `<button class="back" type="button" data-level="${E.lk}">← ${L.name} lessons</button>
       <div class="title"><span class="eyebrow">Level exam</span><h1>${L.name} exam</h1></div>
-      <div class="todo"><b>How it works</b><p>There are 4 parts and ${tot} questions. Answer everything, then go to the next part. Your score appears at the end. You need <b>${PASS_MARK}%</b> (${Math.ceil(tot * PASS_MARK / 100)} of ${tot} correct) to pass${L.next ? " and unlock " + LEVELS[L.next].name : ""}. You can take it as often as you like; the questions change each time.</p></div>
-      <div class="parts">${E.secs.map((s, i) => `<div><b>Part ${i + 1}: ${esc(s.name)}</b><span>${esc(s.en)} · ${s.qs.length} questions</span></div>`).join("")}</div>
+      <div class="todo"><b>How it works</b><p>There are 4 parts and ${tot} questions. Answer a part, then press <b>Check this part</b> to see your score for it. To pass${L.next ? " and unlock " + LEVELS[L.next].name : ""}, you need <b>${PASS_MARK}% in every part</b>, so you must do well in reading, gaps, listening and writing. You can take it as often as you like; the questions change each time.</p></div>
+      <div class="parts">${E.secs.map((s, i) => `<div><b>Part ${i + 1}: ${esc(s.name)}</b><span>${esc(s.en)} · ${s.qs.length} questions · need ${secNeed(s)}</span></div>`).join("")}</div>
       <div class="row"><button class="btn big" type="button" data-exnext="0">Start part 1 →</button></div>
       <p class="hint">Turn your sound on for part 3.</p>`;
   }
   if (E.done) return examResultHTML();
   const s = E.secs[E.idx], start = E.secs.slice(0, E.idx).reduce((a, x) => a + x.qs.length, 0);
-  const last = E.idx === E.secs.length - 1;
+  const last = E.idx === E.secs.length - 1, checked = !!E.checked[E.idx];
+  const sOk = secRight(s), sPass = sOk >= secNeed(s);
   return `<div class="spread"><span class="eyebrow">${L.name} exam · Part ${E.idx + 1} of 4</span><button class="back" type="button" data-quit="1">Leave exam</button></div>
     <div class="stepper" style="grid-template-columns:repeat(4,minmax(0,1fr))">${E.secs.map((x, i) => `<span class="step${i === E.idx ? " on" : i < E.idx ? " past" : ""}"><i></i><span>${i + 1}. ${esc(x.en)}</span></span>`).join("")}</div>
     <div class="title"><h1>${esc(s.name)}</h1></div>
-    <div class="todo"><b>What to do</b><p>${esc(s.todo)}</p></div>
+    <div class="todo"><b>What to do</b><p>${esc(s.todo)} You need <b>${secNeed(s)} of ${s.qs.length}</b> right in this part.</p></div>
     ${s.text ? `<div class="readtext">${esc(s.text)}</div>` : ""}
-    <div class="qlist">${s.qs.map((q, i) => qHTML(q, start + i + 1, E.ans[q.id], false)).join("")}</div>
-    <div class="navbar">${E.idx > 0 ? `<button class="btn ghost" type="button" data-exnext="${E.idx - 1}">← Previous part</button>` : "<span></span>"}
-      ${last ? `<button class="btn big" type="button" data-exfinish="1">Finish and see my score</button>` : `<button class="btn big" type="button" data-exnext="${E.idx + 1}">Next part →</button>`}</div>`;
+    <div class="qlist">${s.qs.map((q, i) => qHTML(q, start + i + 1, E.ans[q.id], checked)).join("")}</div>
+    ${checked
+      ? `<div class="checkbar ${sPass ? "right" : "wrong"}"><h3>Part ${E.idx + 1}: ${sOk} / ${s.qs.length} · ${sPass ? "passed ✓" : "not passed ✗"}</h3>
+          <p>${sPass ? "Well done. Look at any red answers, then continue." : `You needed ${secNeed(s)}. Look at the red answers to learn from them. Finish the exam to see your full result.`}</p>
+          ${last ? `<button class="btn big" type="button" data-exfinish="1">See my exam result</button>` : `<button class="btn big" type="button" data-exnext="${E.idx + 1}">Next part →</button>`}</div>`
+      : `<div class="checkbar"><p class="hint">You can't change your answers after you check.</p><button class="btn big" type="button" data-excheck="1">Check this part</button></div>`}`;
 }
+const secRight = s => s.qs.filter(q => grade(q, EXAM.ans[q.id])).length;
+const secNeed = s => Math.ceil(s.qs.length * PASS_MARK / 100);
 function examResultHTML() {
   const E = EXAM, L = LEVELS[E.lk];
-  const per = E.secs.map(s => ({ s, ok: s.qs.filter(q => grade(q, E.ans[q.id])).length }));
+  const per = E.secs.map(s => ({ s, ok: secRight(s), pass: secRight(s) >= secNeed(s) }));
   const ok = per.reduce((a, x) => a + x.ok, 0), tot = E.secs.reduce((a, x) => a + x.qs.length, 0);
-  const pct = Math.round(ok / tot * 100), pass = pct >= PASS_MARK;
+  const pct = Math.round(ok / tot * 100), pass = per.every(x => x.pass), failed = per.filter(x => !x.pass);
   const wrong = E.secs.flatMap(s => s.qs.filter(q => !grade(q, E.ans[q.id])));
   const nextName = L.next ? LEVELS[L.next].name : null;
   return `<div class="score ${pass ? "pass" : "fail"}">
       <span class="eyebrow">${L.name} exam result</span>
       <div class="big">${pct}%</div>
-      <h2>${pass ? (nextName ? `Bestanden! You passed. ${nextName} is now open.` : "Bestanden! You finished the whole course.") : `Not yet. You need ${PASS_MARK}% to pass.`}</h2>
-      <p>${ok} of ${tot} answers correct.${pass ? "" : " Look at your mistakes below, review the lessons where you were weak, then try again. The questions change each time."}</p>
-      <div class="secscore">${per.map(x => `<div><span>${esc(x.s.name)} (${esc(x.s.en)})</span><b>${x.ok} / ${x.s.qs.length}</b></div>`).join("")}</div>
+      <h2>${pass ? (nextName ? `Bestanden! You passed every part. ${nextName} is now open.` : "Bestanden! You finished the whole course.") : `Not yet. You must pass all 4 parts (${PASS_MARK}% each).`}</h2>
+      <p>${ok} of ${tot} answers correct.${pass ? "" : ` Parts to improve: <b>${failed.map(x => esc(x.s.en)).join(", ")}</b>. Review the lessons, then try again. The questions change each time.`}</p>
+      <div class="secscore">${per.map(x => `<div><span>${esc(x.s.name)} (${esc(x.s.en)})</span><b class="${x.pass ? "partok" : "partbad"}">${x.ok} / ${x.s.qs.length} ${x.pass ? "✓" : "✗"}</b></div>`).join("")}</div>
       <div class="row">${pass && nextName ? `<button class="btn big" type="button" data-level="${L.next}">Go to ${nextName} →</button>` : ""}
         <button class="btn${pass && nextName ? " ghost" : ""}" type="button" data-exam="${E.lk}">Take the exam again</button>
         <button class="btn ghost" type="button" data-level="${E.lk}">Back to ${L.name} lessons</button></div>
@@ -854,6 +937,7 @@ function render() {
   else if (V.name === "ressourcen") h = resHTML();
   else h = homeHTML();
   view.innerHTML = h;
+  stats();
   if (V.name === "aussprache") {
     const r = document.getElementById("rate"), o = document.getElementById("rateOut");
     r.addEventListener("input", () => { rate = parseFloat(r.value); o.textContent = rate.toFixed(2) + "×"; });
@@ -885,20 +969,40 @@ document.addEventListener("click", e => {
   if (d.hint) { const h = document.getElementById("hint-" + d.hint); if (h) h.hidden = false; t.hidden = true; return; }
   if (d.go) { if (d.go === "home") EXAM = null; go({ name: d.go }); return; }
   if (d.level) { EXAM = null; go({ name: "level", lk: d.level }); return; }
-  if (d.lesson) { const [lk, ui] = d.lesson.split(":"); PR = null; go({ name: "lesson", lk, ui: +ui, step: 0 }); return; }
+  if (d.lesson) { const [lk, ui] = d.lesson.split(":"); if (!lessonOpen(lk, +ui)) return; PR = null; go({ name: "lesson", lk, ui: +ui, step: 0 }); return; }
   if (d.step !== undefined && V.name === "lesson") { go(Object.assign({}, V, { step: +d.step })); return; }
-  if (d.finish) { const [lk, ui] = d.finish.split(":"); P.done[lk + "-" + (+ui + 1)] = 1; save(); PR = null; go({ name: "level", lk }); return; }
-  if (d.check === "practice") { PR.checked = true; render(); const sc = document.querySelector(".score"); if (sc) sc.scrollIntoView({ block: "center" }); return; }
-  if (d.newquiz) { PR = null; render(); return; }
-  if (d.exam) { EXAM = buildExam(d.exam); go({ name: "exam" }); return; }
+  if (d.qcheck) {
+    const q = PR.qs[PR.i], a = PR.ans[q.id];
+    if (empty(a)) { const w = document.getElementById("qwarn"); if (w) { w.textContent = "Choose or type an answer first."; w.classList.add("warn"); } return; }
+    PR.res[q.id] = grade(q, a); PR.phase = "fb"; render();
+    if (PR.res[q.id] && q.say) speak(q.say);
+    const cb = document.querySelector(".checkbar .btn"); if (cb) cb.focus({ preventScroll: true });
+    return;
+  }
+  if (d.qnext) {
+    if (PR.i + 1 < PR.qs.length) { PR.i++; PR.phase = "q"; render(); window.scrollTo({ top: 0 }); return; }
+    PR.phase = "end";
+    const id = V.lk + "-" + (V.ui + 1), right = quizRight();
+    if (right >= quizNeed()) { const pct = Math.round(right / PR.qs.length * 100); P.done[id] = Math.max(typeof P.done[id] === "number" ? P.done[id] : 0, pct); award(right * 2 + 10); }
+    else award(right);
+    save(); render(); window.scrollTo({ top: 0 }); return;
+  }
+  if (d.newquiz) { PR = null; render(); window.scrollTo({ top: 0 }); return; }
+  if (d.exam) { if (!examOpen(d.exam)) return; EXAM = buildExam(d.exam); go({ name: "exam" }); return; }
   if (d.exnext !== undefined) { EXAM.idx = +d.exnext; render(); window.scrollTo({ top: 0 }); return; }
+  if (d.excheck) {
+    const s = EXAM.secs[EXAM.idx], n = s.qs.filter(q => empty(EXAM.ans[q.id])).length;
+    if (n && !d.sure) { t.dataset.sure = "1"; t.textContent = `${n} questions are empty. Tap again to check anyway`; return; }
+    EXAM.checked[EXAM.idx] = true; render();
+    const cb = document.querySelector(".checkbar"); if (cb) cb.scrollIntoView({ block: "center" });
+    return;
+  }
   if (d.exfinish) {
-    const unanswered = EXAM.secs.flatMap(s => s.qs).filter(q => { const a = EXAM.ans[q.id]; return a === undefined || a === "" || (Array.isArray(a) && !a.length); }).length;
-    if (unanswered && !d.sure) { t.dataset.sure = "1"; t.textContent = `${unanswered} questions are empty. Tap again to finish anyway`; return; }
     EXAM.done = true;
-    const tot = EXAM.secs.reduce((a, x) => a + x.qs.length, 0), ok = EXAM.secs.reduce((a, s) => a + s.qs.filter(q => grade(q, EXAM.ans[q.id])).length, 0);
-    const pct = Math.round(ok / tot * 100), prev = P.exams[EXAM.lk] || {};
-    P.exams[EXAM.lk] = { best: Math.max(prev.best || 0, pct), passed: !!prev.passed || pct >= PASS_MARK, last: pct };
+    const tot = EXAM.secs.reduce((a, x) => a + x.qs.length, 0), ok = EXAM.secs.reduce((a, s) => a + secRight(s), 0);
+    const pct = Math.round(ok / tot * 100), prev = P.exams[EXAM.lk] || {}, pass = EXAM.secs.every(s => secRight(s) >= secNeed(s));
+    P.exams[EXAM.lk] = { best: Math.max(prev.best || 0, pct), passed: !!prev.passed || pass, last: pct };
+    award(ok * 2 + (pass ? 50 : 0));
     save(); render(); window.scrollTo({ top: 0 }); return;
   }
   if (d.quit) { if (!d.sure) { t.dataset.sure = "1"; t.textContent = "Tap again to leave (your answers will be lost)"; return; } const lk = EXAM.lk; EXAM = null; go({ name: "level", lk }); return; }
@@ -917,6 +1021,11 @@ document.addEventListener("input", e => {
     try { localStorage.setItem("dw-draft-" + el.dataset.draft, el.value); } catch (err) {}
     const wc = document.getElementById("wc"); if (wc) wc.textContent = (el.value.trim() ? el.value.trim().split(/\s+/).length : 0) + " words · saved in this browser";
   }
+});
+// Enter in a quiz box = press Check / Continue
+document.addEventListener("keydown", e => {
+  if (e.key !== "Enter" || V.name !== "lesson" || !PR || !e.target.matches("input[type=text]")) return;
+  const b = document.querySelector("[data-qcheck], [data-qnext]"); if (b) { e.preventDefault(); b.click(); }
 });
 document.addEventListener("change", e => { if (e.target.id === "hideEn") document.getElementById("wordGrid").classList.toggle("hide-en", e.target.checked); });
 

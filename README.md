@@ -1,6 +1,6 @@
 # Mein Deutschweg
 
-A free German course from A1 to B2: vocabulary, grammar, pronunciation, writing, and level exams. You need 80% on a level's exam to unlock the next level.
+A free German course from A1 to B2, built like Duolingo: pass each lesson (8 of 10 right) to open the next one, then pass every part of the level exam (80% each) to open the next level.
 
 **Open it:** https://myriambs.github.io/mein-deutschweg/
 
