@@ -1,0 +1,930 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mein Deutschweg</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: one guided reading column. Home = path of 4 levels; level = lesson list + exam; lesson = 5 numbered steps with Back/Next. */
+:root {
+  --bg: #f5f6f9; --surface: #ffffff; --sunk: #eceef4; --fg: #161b2e; --muted: #5a6178; --line: #d9dce6;
+  --accent: #3446d4; --accent-soft: #e4e7fb; --on-accent: #ffffff;
+  --der: #2563c9; --die: #c8344a; --das: #1b8657; --pl: #7a6a2f;
+  --good: #1b8657; --good-soft: #e1f3ea; --bad: #c8344a; --bad-soft: #fbe6ea;
+  --display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --body: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #11131c; --surface: #1a1d29; --sunk: #232737; --fg: #e9ebf3; --muted: #9da3b8; --line: #2e3346;
+    --accent: #8d9bff; --accent-soft: #262c52; --on-accent: #11131c;
+    --der: #6fa3ff; --die: #ff7d8f; --das: #4fd193; --pl: #d6c27a;
+    --good: #4fd193; --good-soft: #17352a; --bad: #ff7d8f; --bad-soft: #3d1d24; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #11131c; --surface: #1a1d29; --sunk: #232737; --fg: #e9ebf3; --muted: #9da3b8; --line: #2e3346;
+  --accent: #8d9bff; --accent-soft: #262c52; --on-accent: #11131c;
+  --der: #6fa3ff; --die: #ff7d8f; --das: #4fd193; --pl: #d6c27a;
+  --good: #4fd193; --good-soft: #17352a; --bad: #ff7d8f; --bad-soft: #3d1d24; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 17px; line-height: 1.55; }
+a { color: var(--accent); }
+h1, h2, h3, h4 { font-family: var(--display); text-wrap: balance; line-height: 1.15; margin: 0; }
+p { margin: 0; }
+.wrap { max-width: 860px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+header.top { background: var(--surface); border-bottom: 1px solid var(--line); }
+header.top .wrap { padding-block: 14px; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.logo { font: 800 1.5rem var(--display); letter-spacing: -0.02em; background: none; border: 0; color: var(--fg); cursor: pointer; padding: 0; }
+.logo span { color: var(--accent); }
+.save-note { font-size: 0.8rem; color: var(--muted); }
+main .wrap { padding-block: 24px 64px; display: grid; gap: 22px; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+.eyebrow { font: 600 0.75rem var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.title { display: grid; gap: 6px; }
+.title h1 { font-size: clamp(1.8rem, 6vw, 2.6rem); font-weight: 800; letter-spacing: -0.015em; }
+.title h2 { font-size: clamp(1.5rem, 5vw, 2.1rem); font-weight: 800; }
+.lede { color: var(--muted); max-width: 62ch; }
+
+.btn { font: 700 1rem var(--body); border: 2px solid var(--accent); background: var(--accent); color: var(--on-accent); padding: 12px 20px; border-radius: 10px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; }
+.btn:hover { filter: brightness(1.08); }
+.btn.ghost { background: transparent; color: var(--accent); }
+.btn.big { font-size: 1.1rem; padding: 14px 24px; }
+.btn[disabled] { background: var(--sunk); border-color: var(--line); color: var(--muted); cursor: not-allowed; filter: none; }
+.btn svg { width: 18px; height: 18px; }
+.back { background: none; border: 0; color: var(--accent); font: 700 0.95rem var(--body); cursor: pointer; padding: 4px 0; justify-self: start; }
+.row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.spread { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; align-items: center; }
+
+.todo { background: var(--accent-soft); border-radius: 12px; padding: 14px 16px; display: grid; gap: 4px; }
+.todo b:first-child { font: 700 0.78rem var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
+
+.next { background: var(--surface); border: 2px solid var(--accent); border-radius: 16px; padding: 20px; display: grid; gap: 12px; }
+.next h2 { font-size: 1.4rem; }
+.how { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+@media (max-width: 600px) { .how { grid-template-columns: 1fr; } }
+.how div { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px; display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; align-items: start; }
+.how .n { grid-row: span 2; font: 800 1.6rem var(--display); color: var(--accent); line-height: 1; }
+.how h3 { font-size: 1rem; }
+.how p { font-size: 0.9rem; color: var(--muted); }
+.path { display: grid; gap: 10px; }
+.lcard { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: grid; grid-template-columns: auto 1fr auto; gap: 16px; align-items: center; }
+@media (max-width: 600px) { .lcard { grid-template-columns: auto 1fr; } .lcard .act { grid-column: 1 / -1; } .lcard .act .btn { width: 100%; } }
+.lcard .badge { width: 64px; height: 64px; border-radius: 14px; background: var(--accent); color: var(--on-accent); display: grid; place-items: center; font: 800 1.5rem var(--display); }
+.lcard.locked .badge { background: var(--sunk); color: var(--muted); }
+.lcard.passed .badge { background: var(--good); }
+.lcard h3 { font-size: 1.15rem; }
+.lcard .meta { font-size: 0.88rem; color: var(--muted); display: flex; gap: 6px 12px; flex-wrap: wrap; align-items: center; }
+.pill { font: 700 0.72rem var(--mono); text-transform: uppercase; letter-spacing: 0.06em; padding: 3px 8px; border-radius: 99px; }
+.pill.ok { background: var(--good-soft); color: var(--good); }
+.pill.lock { background: var(--sunk); color: var(--muted); }
+.pill.open { background: var(--accent-soft); color: var(--accent); }
+.bar { height: 8px; background: var(--sunk); border-radius: 99px; overflow: hidden; }
+.bar i { display: block; height: 100%; background: var(--accent); }
+.tools { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+@media (max-width: 600px) { .tools { grid-template-columns: 1fr; } }
+.tool { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px; text-align: left; cursor: pointer; display: grid; gap: 4px; font: inherit; color: var(--fg); }
+.tool:hover { border-color: var(--accent); }
+.tool h3 { font-size: 1rem; }
+.tool p { font-size: 0.88rem; color: var(--muted); }
+
+.lessons { display: grid; gap: 8px; }
+.lrow { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; display: grid; grid-template-columns: 40px 1fr auto; gap: 12px; align-items: center; }
+.lrow .num { width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--line); display: grid; place-items: center; font: 800 1rem var(--display); color: var(--muted); }
+.lrow.done .num { background: var(--good); border-color: var(--good); color: var(--on-accent); }
+.lrow h3 { font-size: 1.02rem; }
+.lrow p { font-size: 0.86rem; color: var(--muted); }
+.lrow .btn { padding: 9px 16px; }
+@media (max-width: 520px) { .lrow { grid-template-columns: 40px 1fr; } .lrow .btn { grid-column: 1 / -1; width: 100%; } }
+.examcard { background: var(--surface); border: 2px dashed var(--accent); border-radius: 14px; padding: 18px; display: grid; gap: 10px; }
+.examcard h3 { font-size: 1.25rem; }
+.can { font-size: 0.95rem; }
+.can summary { cursor: pointer; color: var(--accent); font-weight: 700; }
+.can ul { margin: 8px 0 0; padding-left: 1.2em; display: grid; gap: 3px; color: var(--muted); }
+
+.stepper { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+.step { border: 0; background: none; padding: 0; cursor: pointer; display: grid; gap: 5px; text-align: left; color: var(--muted); font: 600 0.78rem var(--body); min-width: 0; }
+.step i { display: block; height: 6px; border-radius: 99px; background: var(--line); }
+.step.on { color: var(--accent); } .step.on i { background: var(--accent); }
+.step.past i { background: var(--accent); opacity: 0.45; }
+.step span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.navbar { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; border-top: 1px solid var(--line); padding-block: 16px 0; }
+
+.toggle { display: inline-flex; gap: 8px; align-items: center; font-size: 0.92rem; color: var(--muted); cursor: pointer; }
+.toggle input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent); }
+.words { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+@media (max-width: 600px) { .words { grid-template-columns: 1fr; } }
+.word { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: center; }
+.word .w { font-weight: 700; font-size: 1.05rem; }
+.word .pl { font-size: 0.82rem; color: var(--muted); }
+.word .en { font-size: 0.9rem; color: var(--muted); }
+.hide-en .word .en { visibility: hidden; }
+.hide-en .word:hover .en, .hide-en .word:focus-within .en { visibility: visible; }
+.art-der { color: var(--der); } .art-die { color: var(--die); } .art-das { color: var(--das); } .art-pl { color: var(--pl); }
+.legend { display: flex; gap: 6px 14px; flex-wrap: wrap; font-size: 0.85rem; color: var(--muted); }
+.legend b { font-family: var(--mono); }
+.say { flex: none; width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--line); background: var(--sunk); color: var(--accent); cursor: pointer; display: inline-grid; place-items: center; }
+.say:hover { border-color: var(--accent); background: var(--accent-soft); }
+.say svg { width: 18px; height: 18px; }
+.say.playing { background: var(--accent); color: var(--on-accent); }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px; display: grid; gap: 10px; min-width: 0; align-content: start; }
+.rule { display: grid; gap: 6px; padding-bottom: 12px; border-bottom: 1px dashed var(--line); }
+.rule:last-child { border-bottom: 0; padding-bottom: 0; }
+.rule h3 { font-size: 1.05rem; }
+.ex { display: flex; gap: 10px; align-items: center; color: var(--muted); }
+.sent { display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: center; padding: 8px 0; border-bottom: 1px dashed var(--line); }
+.sent:last-child { border-bottom: 0; }
+.sent .de { font-weight: 700; }
+.sent .en { font-size: 0.88rem; color: var(--muted); }
+textarea, input[type="text"] { width: 100%; font: 1rem/1.5 var(--body); padding: 11px 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--fg); }
+textarea { min-height: 160px; resize: vertical; }
+input[type="text"]:focus, textarea:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 3px var(--accent-soft); }
+
+.qlist { display: grid; gap: 12px; }
+.q { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; display: grid; gap: 10px; }
+.q .qn { font: 600 0.75rem var(--mono); color: var(--muted); letter-spacing: 0.06em; text-transform: uppercase; }
+.q .prompt { font-weight: 700; font-size: 1.05rem; }
+.q.right { border-color: var(--good); background: var(--good-soft); }
+.q.wrong { border-color: var(--bad); background: var(--bad-soft); }
+.fb { font-size: 0.92rem; font-weight: 700; }
+.q.right .fb { color: var(--good); } .q.wrong .fb { color: var(--bad); }
+.opts { display: grid; gap: 6px; }
+.opt { text-align: left; font: 1rem var(--body); padding: 10px 14px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--fg); cursor: pointer; }
+.opt:hover { border-color: var(--accent); }
+.opt.sel { border: 2px solid var(--accent); background: var(--accent-soft); font-weight: 700; }
+.opts.inline { display: flex; flex-wrap: wrap; }
+.keys { display: flex; gap: 6px; flex-wrap: wrap; }
+.key { font: 700 1rem var(--body); width: 40px; height: 36px; border-radius: 8px; border: 1px solid var(--line); background: var(--sunk); color: var(--fg); cursor: pointer; }
+.key:hover { border-color: var(--accent); }
+.listen { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.hint { font-size: 0.9rem; color: var(--muted); }
+.linkbtn { background: none; border: 0; color: var(--accent); font: 700 0.9rem var(--body); cursor: pointer; padding: 0; text-decoration: underline; text-underline-offset: 3px; }
+.answer-line { min-height: 48px; border: 2px dashed var(--line); border-radius: 10px; padding: 6px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.answer-line:empty::before { content: "Tap the words below in the right order"; color: var(--muted); font-size: 0.9rem; padding: 4px 6px; }
+.toks { display: flex; flex-wrap: wrap; gap: 6px; }
+.tok { font: 700 1rem var(--body); padding: 8px 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--sunk); color: var(--fg); cursor: pointer; }
+.tok:hover { border-color: var(--accent); }
+.tok.used { visibility: hidden; }
+.answer-line .tok { background: var(--accent-soft); border-color: var(--accent); }
+.readtext { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 18px; white-space: pre-wrap; font-size: 1.02rem; line-height: 1.65; }
+
+.score { display: grid; gap: 14px; background: var(--surface); border-radius: 16px; padding: 22px; border: 2px solid var(--line); }
+.score.pass { border-color: var(--good); }
+.score.fail { border-color: var(--bad); }
+.score .big { font: 800 clamp(2.6rem, 10vw, 4rem) var(--display); line-height: 1; font-variant-numeric: tabular-nums; }
+.score.pass .big { color: var(--good); } .score.fail .big { color: var(--bad); }
+.secscore { display: grid; gap: 6px; }
+.secscore div { display: grid; grid-template-columns: 1fr auto; gap: 10px; font-variant-numeric: tabular-nums; border-bottom: 1px dashed var(--line); padding-bottom: 6px; }
+.parts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+@media (max-width: 520px) { .parts { grid-template-columns: 1fr; } }
+.parts div { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 12px; display: grid; gap: 2px; }
+.parts b { font-family: var(--display); }
+.parts span { font-size: 0.88rem; color: var(--muted); }
+
+.grid3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 760px) { .grid3 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 520px) { .grid3 { grid-template-columns: 1fr; } }
+.sound h3 { font-size: 1.5rem; }
+.ipa { font-family: var(--mono); color: var(--muted); font-size: 0.88rem; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { font: 700 0.95rem var(--body); border: 1px solid var(--line); background: var(--sunk); color: var(--fg); border-radius: 8px; padding: 6px 10px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+.chip:hover { border-color: var(--accent); color: var(--accent); }
+.chip svg { width: 13px; height: 13px; color: var(--accent); }
+.tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 0.95rem; }
+th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font: 600 0.75rem var(--mono); text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); background: var(--sunk); }
+tr:last-child td { border-bottom: 0; }
+.letter { background: var(--sunk); border-radius: 10px; padding: 16px; white-space: pre-wrap; font-size: 0.95rem; overflow-wrap: anywhere; }
+details.model { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; }
+details.model summary { cursor: pointer; padding: 14px 16px; font: 700 1.05rem var(--display); }
+details.model .mb { padding: 0 16px 16px; display: grid; gap: 12px; }
+ul.clean, ol.clean { margin: 0; padding-left: 1.2em; display: grid; gap: 4px; }
+.res h3 a { color: var(--fg); text-decoration-color: var(--accent); text-underline-offset: 3px; }
+.res .lv { font: 600 0.75rem var(--mono); color: var(--accent); }
+.res p { font-size: 0.92rem; color: var(--muted); }
+footer { border-top: 1px solid var(--line); color: var(--muted); font-size: 0.85rem; }
+footer .wrap { padding-block: 18px 32px; display: grid; gap: 4px; }
+.warn { color: var(--bad); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <button class="logo" type="button" data-go="home">Mein <span>Deutsch</span>weg</button>
+    <span class="save-note" id="saveNote">Progress saved in this browser</span>
+  </div>
+</header>
+<main><div class="wrap" id="view"></div></main>
+<footer><div class="wrap">
+  <p id="voiceStatus">Audio uses your device's built-in German voice.</p>
+  <p>Hour estimates follow typical Goethe-Institut guidance. The level exams here are practice tests, not official certificates.</p>
+</div></footer>
+
+<script>
+const ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>';
+const LOCK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
+const PASS_MARK = 80;
+const ORDER = ["a1", "a2", "b1", "b2"];
+
+/* COURSE DATA — vocab entries: "word|plural or forms|English" */
+const LEVELS = {
+a1: { name: "A1", title: "Beginner: survive and introduce yourself", hours: "≈ 80–150 hours", next: "a2",
+  can: ["Introduce yourself, spell your name, give your number and address", "Shop, order food, ask about prices and times", "Fill in forms and write short messages", "Understand slow, clear everyday speech"],
+  units: [
+  { t: "Hallo! Ich bin …", s: "Greetings, name, country, languages",
+    v: ["der Name|die Namen|name","der Vorname|die Vornamen|first name","der Familienname|die Familiennamen|surname","das Land|die Länder|country","die Stadt|die Städte|city","die Sprache|die Sprachen|language","der Beruf|die Berufe|profession","heißen|ich heiße, du heißt|to be called","kommen|ich komme, du kommst|to come","wohnen|ich wohne, du wohnst|to live","sprechen|ich spreche, du sprichst|to speak","Hallo!||hello","Guten Morgen!||good morning","Guten Tag!||good day, hello (formal)","Tschüss!||bye","danke||thank you","bitte||please"],
+    g: [["Personal pronouns + sein (to be)", "ich bin, du bist, er/sie ist, wir sind, Sie sind"], ["The verb is always word 2", "Ich komme aus Tunesien. Woher kommst du?"], ["Question words", "Wer? Was? Wo? Woher? Wie?"]],
+    p: [["Ich heiße Lina. Und Sie?","My name is Lina. And you?"],["Woher kommen Sie?","Where are you from?"],["Ich komme aus Tunesien und wohne in Tunis.","I'm from Tunisia and live in Tunis."],["Ich spreche Arabisch, Französisch und ein bisschen Deutsch.","I speak Arabic, French and a little German."],["Wie geht es Ihnen? Gut, danke.","How are you? Fine, thanks."],["Freut mich!","Nice to meet you!"]],
+    w: "Write 5–6 sentences about yourself: name, country, city, languages, profession.", pr: "Long and short vowels: Name (long a) vs Stadt (short a)." },
+  { t: "Zahlen, Zeit, Kontakt", s: "Numbers, time, phone, address",
+    v: ["die Zahl|die Zahlen|number","die Uhr|die Uhren|clock; o'clock","die Telefonnummer|die Telefonnummern|phone number","die Adresse|die Adressen|address","die Hausnummer|die Hausnummern|house number","die Postleitzahl|die Postleitzahlen|postcode","die E-Mail|die E-Mails|email","das Geburtsdatum|die Geburtsdaten|date of birth","der Termin|die Termine|appointment","der Tag|die Tage|day","die Woche|die Wochen|week","die Stunde|die Stunden|hour","die Minute|die Minuten|minute","null||zero","zwölf||twelve","zwanzig||twenty","dreißig||thirty","hundert||hundred"],
+    g: [["haben (to have)", "ich habe, du hast, er hat, wir haben"], ["Numbers 21–99 are said back to front", "21 = einundzwanzig (one-and-twenty), 58 = achtundfünfzig"], ["Telling the time", "14:30 = vierzehn Uhr dreißig, or informally: halb drei"]],
+    p: [["Wie spät ist es? Es ist halb drei.","What time is it? It's half past two."],["Wie ist Ihre Telefonnummer?","What is your phone number?"],["Können Sie das bitte buchstabieren?","Can you spell that, please?"],["Ich bin dreißig Jahre alt.","I'm thirty years old."],["Wann haben Sie Geburtstag? Am zwölften März.","When is your birthday? On the twelfth of March."],["Am Montag um zehn Uhr.","On Monday at ten o'clock."]],
+    w: "Fill in a form in German: Name, Vorname, Geburtsdatum, Adresse, Telefon, E-Mail.", pr: "z sounds like ts: zehn, zwölf, zwanzig." },
+  { t: "Familie und Freunde", s: "Family, my / your, plurals",
+    v: ["die Familie|die Familien|family","die Mutter|die Mütter|mother","der Vater|die Väter|father","die Eltern|(Pl.)|parents","das Kind|die Kinder|child","der Sohn|die Söhne|son","die Tochter|die Töchter|daughter","der Bruder|die Brüder|brother","die Schwester|die Schwestern|sister","die Geschwister|(Pl.)|siblings","der Mann|die Männer|man; husband","die Frau|die Frauen|woman; wife","der Freund|die Freunde|friend (male)","die Freundin|die Freundinnen|friend (female)","das Baby|die Babys|baby","verheiratet||married","ledig||single","alt||old"],
+    g: [["der / die / das and ein / eine", "der Bruder = ein Bruder; die Schwester = eine Schwester; das Kind = ein Kind"], ["mein / dein / Ihr", "mein Vater, meine Mutter, dein Kind, Ihr Mann"], ["Plurals: learn them with the word", "der Bruder, die Brüder; das Kind, die Kinder"]],
+    p: [["Das ist meine Schwester. Sie ist Ärztin.","This is my sister. She is a doctor."],["Hast du Geschwister?","Do you have brothers or sisters?"],["Wie heißt deine Mutter?","What's your mother's name?"],["Ich bin ledig.","I'm single."],["Wir haben zwei Kinder.","We have two children."],["Mein Bruder ist fünfundzwanzig Jahre alt.","My brother is 25 years old."]],
+    w: "Describe a family photo in 6–8 sentences: who is it, how old, what job, where they live.", pr: "ö and ü: schön, Brüder, Mütter (see the Pronunciation lab)." },
+  { t: "Essen und Einkaufen", s: "Food, shopping, café",
+    v: ["das Brot|die Brote|bread","das Brötchen|die Brötchen|bread roll","der Käse|–|cheese","die Milch|–|milk","das Ei|die Eier|egg","der Apfel|die Äpfel|apple","die Banane|die Bananen|banana","die Tomate|die Tomaten|tomato","das Fleisch|–|meat","der Fisch|die Fische|fish","der Reis|–|rice","das Wasser|–|water","der Kaffee|die Kaffees|coffee","der Tee|die Tees|tea","der Saft|die Säfte|juice","kaufen||to buy","essen|ich esse, du isst|to eat","trinken||to drink","kosten||to cost"],
+    g: [["Accusative: only der changes", "der Apfel → Ich kaufe einen Apfel / den Apfel"], ["möchten (would like)", "Ich möchte einen Kaffee."], ["kein vs nicht", "Ich habe kein Brot. Ich esse nicht gern Fisch."]],
+    p: [["Ich möchte ein Kilo Äpfel, bitte.","I'd like a kilo of apples, please."],["Was kostet das?","How much is it?"],["Ich nehme einen Tee, bitte.","I'll have a tea, please."],["Haben Sie Brötchen?","Do you have bread rolls?"],["Zahlen, bitte!","The bill, please!"],["Ich esse kein Schweinefleisch.","I don't eat pork."]],
+    w: "Write a shopping list (8 items with der/die/das), then a 4-sentence message inviting a friend for dinner.", pr: "b, d, g at the end sound like p, t, k: Brot, Tag. ch in ich vs ach." },
+  { t: "Mein Tag", s: "Daily routine, days, time phrases",
+    v: ["aufstehen|ich stehe auf|to get up","frühstücken||to have breakfast","arbeiten||to work","anfangen|ich fange an, er fängt an|to begin","einkaufen|ich kaufe ein|to go shopping","kochen||to cook","fernsehen|ich sehe fern|to watch TV","schlafen|ich schlafe, er schläft|to sleep","der Morgen|die Morgen|morning","der Mittag|die Mittage|midday","der Abend|die Abende|evening","die Nacht|die Nächte|night","der Montag|die Montage|Monday","das Wochenende|die Wochenenden|weekend","der Feierabend|die Feierabende|end of the workday","früh||early","spät||late"],
+    g: [["Separable verbs split", "aufstehen → Ich stehe um 7 Uhr auf."], ["Time words", "am Montag, um 8 Uhr, am Abend, von 9 bis 17 Uhr"], ["Time first? The verb stays word 2", "Am Wochenende schlafe ich lange."]],
+    p: [["Ich stehe um sieben Uhr auf.","I get up at seven."],["Ich arbeite von neun bis fünf.","I work from nine to five."],["Wann fängt der Kurs an?","When does the course start?"],["Am Abend koche ich.","In the evening I cook."],["Am Wochenende schlafe ich lange.","At the weekend I sleep in."],["Nach dem Feierabend gehe ich spazieren.","After work I go for a walk."]],
+    w: "Describe your normal weekday from morning to night (about 60 words).", pr: "The first part of separable verbs is stressed: AUFstehen, EINkaufen." },
+  { t: "Wohnen", s: "Flat, rooms, furniture, rent",
+    v: ["die Wohnung|die Wohnungen|flat, apartment","das Haus|die Häuser|house","das Zimmer|die Zimmer|room","die Küche|die Küchen|kitchen","das Bad|die Bäder|bathroom","das Schlafzimmer|die Schlafzimmer|bedroom","das Wohnzimmer|die Wohnzimmer|living room","der Balkon|die Balkone|balcony","der Tisch|die Tische|table","der Stuhl|die Stühle|chair","das Bett|die Betten|bed","der Schrank|die Schränke|wardrobe, cupboard","die Lampe|die Lampen|lamp","die Miete|die Mieten|rent","groß||big","klein||small","hell||bright","teuer||expensive","billig||cheap"],
+    g: [["Adjectives after sein", "Die Wohnung ist hell und groß."], ["Where? in + dative", "in der Küche, im Bad, im Wohnzimmer"], ["es gibt (there is)", "Es gibt einen Balkon."]],
+    p: [["Ich suche eine Zweizimmerwohnung.","I'm looking for a two-room flat."],["Wie hoch ist die Miete?","How much is the rent?"],["Ist die Wohnung noch frei?","Is the flat still available?"],["Wo ist das Bad?","Where is the bathroom?"],["Die Küche ist klein, aber modern.","The kitchen is small but modern."],["Das Schlafzimmer ist sehr hell.","The bedroom is very bright."]],
+    w: "Answer a flat advert: say who you are, ask 2 questions, suggest a time to visit.", pr: "-er at the end sounds like a short a: Zimmer, teuer." },
+  { t: "In der Stadt", s: "Directions, transport, tickets",
+    v: ["der Bahnhof|die Bahnhöfe|train station","die Haltestelle|die Haltestellen|bus or tram stop","die Fahrkarte|die Fahrkarten|ticket","die Straße|die Straßen|street","die Ampel|die Ampeln|traffic light","der Bus|die Busse|bus","die U-Bahn|die U-Bahnen|underground train","der Zug|die Züge|train","das Auto|die Autos|car","das Fahrrad|die Fahrräder|bicycle","der Supermarkt|die Supermärkte|supermarket","die Bank|die Banken|bank","das Kino|die Kinos|cinema","links||left","rechts||right","geradeaus||straight ahead","fahren|ich fahre, du fährst|to drive, to go","umsteigen|ich steige um|to change (trains)"],
+    g: [["Polite commands (Sie)", "Gehen Sie geradeaus! Nehmen Sie den Bus!"], ["mit + dative", "mit dem Bus, mit der U-Bahn, mit dem Fahrrad"], ["können and müssen", "Ich muss umsteigen. Kann ich hier parken?"]],
+    p: [["Entschuldigung, wie komme ich zum Bahnhof?","Excuse me, how do I get to the station?"],["Gehen Sie geradeaus und dann links.","Go straight ahead and then left."],["Wo ist die nächste Haltestelle?","Where is the nearest stop?"],["Eine Fahrkarte nach Berlin, bitte.","A ticket to Berlin, please."],["Ich fahre mit dem Bus zur Arbeit.","I take the bus to work."],["Muss ich umsteigen?","Do I have to change?"]],
+    w: "Write directions from your home to a café near you (6–8 sentences).", pr: "st and sp at the start sound like sht and shp: Straße, Sport." },
+  { t: "Gesundheit", s: "Body, doctor, appointments",
+    v: ["der Arzt / die Ärztin|die Ärzte / die Ärztinnen|doctor","der Körper|die Körper|body","der Kopf|die Köpfe|head","der Bauch|die Bäuche|belly, stomach","der Arm|die Arme|arm","das Bein|die Beine|leg","die Hand|die Hände|hand","der Fuß|die Füße|foot","das Auge|die Augen|eye","der Hals|die Hälse|throat, neck","das Fieber|–|fever","die Tablette|die Tabletten|pill","die Apotheke|die Apotheken|pharmacy","die Schmerzen|(Pl.)|pain","krank||ill","gesund||healthy","wehtun|es tut weh|to hurt"],
+    g: [["müssen and dürfen", "Sie müssen im Bett bleiben. Sie dürfen nicht rauchen."], ["Saying what hurts", "Mein Kopf tut weh. Ich habe Kopfschmerzen."], ["Saying no politely", "Ich kann leider nicht kommen."]],
+    p: [["Ich möchte einen Termin machen.","I'd like to make an appointment."],["Ich habe Kopfschmerzen und Fieber.","I have a headache and a fever."],["Mein Bauch tut weh.","My stomach hurts."],["Ich kann am Dienstag leider nicht kommen.","Unfortunately I can't come on Tuesday."],["Haben Sie am Donnerstag einen Termin frei?","Do you have a free appointment on Thursday?"],["Gute Besserung!","Get well soon!"]],
+    w: "Short email (about 30 words): cancel a doctor's appointment, say why, ask for a new one.", pr: "Say the h at the start: Hals, Hand, Haus. pf = p + f: Kopf." },
+  { t: "Freizeit und Wetter", s: "Hobbies, likes, weather, seasons",
+    v: ["die Freizeit|–|free time","das Hobby|die Hobbys|hobby","der Sport|–|sport","der Fußball|–|football","die Musik|–|music","das Buch|die Bücher|book","der Film|die Filme|film","das Wetter|–|weather","die Sonne|–|sun","der Regen|–|rain","der Schnee|–|snow","der Sommer|die Sommer|summer","der Winter|die Winter|winter","schwimmen||to swim","lesen|ich lese, du liest|to read","spielen||to play","gern||gladly (ich lese gern = I like reading)","warm||warm","kalt||cold"],
+    g: [["gern + verb = to like doing", "Ich schwimme gern. Ich lese nicht gern."], ["mögen (to like)", "ich mag, du magst, er mag: Ich mag Musik."], ["Weather with es", "Es regnet. Es schneit. Es ist kalt."]],
+    p: [["Was machst du gern in deiner Freizeit?","What do you like doing in your free time?"],["Ich lese gern und spiele Fußball.","I like reading and I play football."],["Wie ist das Wetter heute? Es regnet.","What's the weather like today? It's raining."],["Im Sommer ist es in Tunis sehr heiß.","In summer it's very hot in Tunis."],["Ich mag Musik.","I like music."],["Hast du am Samstag Zeit?","Are you free on Saturday?"]],
+    w: "Write to a new friend about your hobbies and the weather in your city (about 40 words).", pr: "w sounds like English v: Wetter, Winter, Wochenende." },
+  { t: "Arbeit und Kurs", s: "Jobs, the classroom, asking for help",
+    v: ["die Arbeit|–|work","der Job|die Jobs|job (informal)","die Firma|die Firmen|company","der Chef / die Chefin|die Chefs / die Chefinnen|boss","der Kollege / die Kollegin|die Kollegen / die Kolleginnen|colleague","das Büro|die Büros|office","der Computer|die Computer|computer","der Kurs|die Kurse|course, class","der Lehrer / die Lehrerin|die Lehrer / die Lehrerinnen|teacher","das Heft|die Hefte|exercise book","der Kuli|die Kulis|pen","die Pause|die Pausen|break","lernen||to learn","schreiben||to write","fragen||to ask","antworten||to answer","verstehen||to understand"],
+    g: [["Jobs: no article", "Ich bin Lehrerin. Ich arbeite als Koch."], ["war / hatte (past of sein / haben)", "Ich war krank. Wir hatten keine Zeit."], ["wollen (to want)", "Ich will Deutsch lernen."]],
+    p: [["Was sind Sie von Beruf?","What do you do for a living?"],["Ich arbeite als Verkäuferin in einem Supermarkt.","I work as a shop assistant in a supermarket."],["Ich verstehe das nicht.","I don't understand that."],["Können Sie das bitte wiederholen?","Could you repeat that, please?"],["Wie sagt man das auf Deutsch?","How do you say that in German?"],["Gestern war ich nicht im Kurs.","Yesterday I wasn't in class."]],
+    w: "Write 5 sentences about your job or your German course: what, where, when, what you like.", pr: "-er at the end sounds like a short a: Lehrer, Computer." },
+  ]},
+a2: { name: "A2", title: "Elementary: handle everyday life", hours: "≈ 150–260 hours total", next: "b1",
+  can: ["Talk about past events and plans", "Handle doctors, shops, hotels and offices", "Write personal emails and short formal requests", "Understand short announcements and messages"],
+  units: [
+  { t: "Erinnerungen", s: "Past experiences and holidays (Perfekt)",
+    v: ["der Urlaub|die Urlaube|holiday","die Reise|die Reisen|trip","die Ferien|(Pl.)|school holidays","die Kindheit|–|childhood","das Erlebnis|die Erlebnisse|experience (event)","die Erinnerung|die Erinnerungen|memory","das Foto|die Fotos|photo","der Strand|die Strände|beach","das Meer|die Meere|sea","besuchen||to visit","erleben||to experience","früher||in the past, before"],
+    g: [["Perfekt with haben", "Ich habe Deutsch gelernt. Wir haben gegessen."], ["Perfekt with sein (movement, change)", "Ich bin nach Berlin gefahren. Er ist aufgewacht."], ["Partizip II", "machen → gemacht, fahren → gefahren, besuchen → besucht"]],
+    p: [["Was hast du am Wochenende gemacht?","What did you do at the weekend?"],["Letztes Jahr bin ich nach München gefahren.","Last year I went to Munich."],["Das war eine tolle Erfahrung.","That was a great experience."],["Ich habe viele Fotos gemacht.","I took lots of photos."]],
+    w: "Email to a friend about your last holiday (about 60 words): where, with whom, what you did.", pr: "ge- and -en are short and weak: geGESsen, geFAHren." },
+  { t: "Arbeit und Beruf", s: "Work, reasons with weil and dass",
+    v: ["die Stelle|die Stellen|job, position","das Gehalt|die Gehälter|salary","die Erfahrung|die Erfahrungen|experience (skills)","die Arbeitszeit|die Arbeitszeiten|working hours","der Arbeitsvertrag|die Arbeitsverträge|employment contract","die Abteilung|die Abteilungen|department","die Aufgabe|die Aufgaben|task","die Schicht|die Schichten|shift","die Teilzeit|–|part-time","die Vollzeit|–|full-time","verdienen||to earn","kündigen||to quit, to give notice"],
+    g: [["weil: the verb goes to the end", "Ich lerne Deutsch, weil ich in Deutschland arbeiten möchte."], ["dass-sentences", "Ich glaube, dass die Stelle interessant ist."], ["denn: the verb stays word 2", "Ich bin müde, denn ich habe viel gearbeitet."]],
+    p: [["Ich arbeite als Programmiererin bei einer kleinen Firma.","I work as a programmer at a small company."],["Ich habe drei Jahre Erfahrung im Kundenservice.","I have three years of experience in customer service."],["Was sind Ihre Arbeitszeiten?","What are your working hours?"],["Ich arbeite Teilzeit.","I work part-time."]],
+    w: "Describe your job or dream job (about 70 words). Use weil and dass twice each.", pr: "-ig at the end sounds like ich: wichtig, richtig, fertig." },
+  { t: "Feste und Einladungen", s: "Invitations, gifts, dates (dative)",
+    v: ["der Geburtstag|die Geburtstage|birthday","das Geschenk|die Geschenke|present","die Einladung|die Einladungen|invitation","die Feier|die Feiern|party, celebration","der Gast|die Gäste|guest","die Hochzeit|die Hochzeiten|wedding","das Fest|die Feste|festival","die Torte|die Torten|cake","der Glückwunsch|die Glückwünsche|congratulations","feiern||to celebrate","schenken||to give (a present)","einladen|ich lade ein, er lädt ein|to invite"],
+    g: [["Dative pronouns", "mir, dir, ihm, ihr, uns, euch, Ihnen"], ["Verbs with dative", "gefallen, helfen, gehören: Das Geschenk gefällt mir."], ["Dates", "am ersten Mai, am dritten Oktober"]],
+    p: [["Herzlichen Glückwunsch zum Geburtstag!","Happy birthday!"],["Ich lade dich zu meiner Party ein.","I'm inviting you to my party."],["Vielen Dank für die Einladung, ich komme gern.","Thanks for the invitation, I'd love to come."],["Soll ich etwas mitbringen?","Should I bring anything?"]],
+    w: "Write an invitation, then two replies: one yes, one polite no with a reason.", pr: "A tiny stop before vowels: ein | Apfel, be | antworten." },
+  { t: "Kleidung", s: "Clothes, sizes, comparing",
+    v: ["die Hose|die Hosen|trousers","das Hemd|die Hemden|shirt","die Jacke|die Jacken|jacket","der Mantel|die Mäntel|coat","das Kleid|die Kleider|dress","der Rock|die Röcke|skirt","der Schuh|die Schuhe|shoe","die Größe|die Größen|size","die Kasse|die Kassen|checkout","anprobieren|ich probiere an|to try on","passen||to fit","umtauschen|ich tausche um|to exchange"],
+    g: [["Adjective endings after der/die/das", "der blaue Mantel, die blaue Jacke, das blaue Hemd"], ["Comparing", "groß, größer, am größten; gut, besser, am besten"], ["welcher? dieser!", "Welche Jacke? Diese hier."]],
+    p: [["Kann ich das anprobieren?","Can I try this on?"],["Haben Sie die Jacke eine Nummer größer?","Do you have the jacket one size bigger?"],["Die blaue gefällt mir besser als die schwarze.","I like the blue one more than the black one."],["Ich möchte das umtauschen.","I'd like to exchange this."]],
+    w: "Message to an online shop: the shoes are too small, ask to exchange them (about 50 words).", pr: "Endings -e, -en, -er stay short and light." },
+  { t: "Beim Arzt", s: "Illness, advice, sick notes",
+    v: ["die Erkältung|die Erkältungen|cold","der Husten|–|cough","der Schnupfen|–|runny nose","das Rezept|die Rezepte|prescription; recipe","die Krankenversicherung|die Krankenversicherungen|health insurance","die Praxis|die Praxen|doctor's surgery","die Krankmeldung|die Krankmeldungen|sick note","das Krankenhaus|die Krankenhäuser|hospital","der Notfall|die Notfälle|emergency","sich ausruhen|ich ruhe mich aus|to rest","sich erkälten||to catch a cold","sich fühlen||to feel"],
+    g: [["Reflexive verbs", "Ich fühle mich nicht wohl. Ruh dich aus!"], ["sollte for advice", "Du solltest viel trinken."], ["Commands with du / ihr", "Trink viel Tee! Nehmt eure Tabletten!"]],
+    p: [["Ich fühle mich nicht wohl.","I don't feel well."],["Ich bin bis Freitag krankgeschrieben.","I'm on sick leave until Friday."],["Sie sollten sich ausruhen.","You should rest."],["Brauche ich dafür ein Rezept?","Do I need a prescription for that?"]],
+    w: "Email to your boss: you are ill, you have a sick note, say until when.", pr: "ich-Laut and ach-Laut together: Ich brauche auch Milch." },
+  { t: "Medien", s: "Phone, apps, if-sentences, indirect questions",
+    v: ["das Handy|die Handys|mobile phone","die Nachricht|die Nachrichten|message; (pl.) news","die App|die Apps|app","der Laptop|die Laptops|laptop","der Bildschirm|die Bildschirme|screen","das Passwort|die Passwörter|password","das Internet|–|internet","der Akku|die Akkus|battery","anrufen|ich rufe an|to phone","schicken||to send","speichern||to save","herunterladen|ich lade herunter|to download"],
+    g: [["wenn (if)", "Wenn ich Zeit habe, rufe ich dich an."], ["Indirect questions: ob / W-word", "Weißt du, ob er kommt? Kannst du mir sagen, wann der Zug fährt?"], ["Simple past of sein, haben, modals", "Ich war müde. Ich konnte nicht kommen."]],
+    p: [["Kannst du mir sagen, wann der Zug fährt?","Can you tell me when the train leaves?"],["Ich weiß nicht, ob ich Zeit habe.","I don't know if I have time."],["Schick mir einfach eine Nachricht.","Just send me a message."],["Mein Akku ist fast leer.","My battery is almost dead."]],
+    w: "Write 5 indirect questions you could ask in a phone shop.", pr: "Yes/no questions go up at the end; W-questions go down." },
+  { t: "Reisen", s: "Hotel, airport, delays, place words",
+    v: ["der Flughafen|die Flughäfen|airport","das Hotel|die Hotels|hotel","die Unterkunft|die Unterkünfte|accommodation","der Koffer|die Koffer|suitcase","der Flug|die Flüge|flight","das Gleis|die Gleise|platform","der Reisepass|die Reisepässe|passport","die Verspätung|die Verspätungen|delay","das Gepäck|–|luggage","der Anschluss|die Anschlüsse|connection (train)","abfahren|der Zug fährt ab|to depart","ankommen|ich komme an|to arrive"],
+    g: [["Where to? + accusative / Where? + dative", "in die Stadt (to town) / in der Stadt (in town)"], ["legen/liegen, stellen/stehen", "Ich lege das Buch auf den Tisch. Es liegt auf dem Tisch."], ["seit, vor, für", "seit drei Jahren, vor einer Woche"]],
+    p: [["Ich möchte ein Doppelzimmer für zwei Nächte reservieren.","I'd like to book a double room for two nights."],["Der Zug hat zwanzig Minuten Verspätung.","The train is twenty minutes late."],["Wo kann ich mein Gepäck abgeben?","Where can I drop off my luggage?"],["Ist das Frühstück inklusive?","Is breakfast included?"]],
+    w: "Formal email to a hotel: book a room, ask about parking and late check-in.", pr: "ng is one sound: lang, Zeitung. nk = ng + k: danke." },
+  { t: "Ämter und Bank", s: "Offices, forms, polite requests",
+    v: ["das Amt|die Ämter|public office","das Formular|die Formulare|form","die Anmeldung|die Anmeldungen|registration","der Ausweis|die Ausweise|ID card","das Konto|die Konten|bank account","die Unterlagen|(Pl.)|documents","die Unterschrift|die Unterschriften|signature","der Antrag|die Anträge|application (official)","die Gebühr|die Gebühren|fee","die Behörde|die Behörden|authority","ausfüllen|ich fülle aus|to fill in","unterschreiben||to sign"],
+    g: [["Polite forms (Konjunktiv II)", "Ich hätte gern … Könnten Sie mir helfen? Würden Sie das wiederholen?"], ["zu + infinitive", "Ich habe vergessen, das Formular mitzubringen."], ["Formal letter frame", "Sehr geehrte Damen und Herren, … Mit freundlichen Grüßen"]],
+    p: [["Ich möchte mich anmelden.","I'd like to register my address."],["Welche Unterlagen brauche ich?","Which documents do I need?"],["Könnten Sie das bitte langsamer sagen?","Could you say that more slowly, please?"],["Ich möchte ein Konto eröffnen.","I'd like to open a bank account."]],
+    w: "Formal email asking an office which documents you need and if you need an appointment.", pr: "A friendly polite melody: a small rise on bitte." },
+  ]},
+b1: { name: "B1", title: "Intermediate: speak freely about life and work", hours: "≈ 260–490 hours total", next: "b2",
+  can: ["Tell stories, give reasons and opinions", "Write formal emails, complaints, CV and cover letter", "Handle phone calls and meetings on familiar topics", "Understand the main points of radio and TV"],
+  units: [
+  { t: "Lebenswege", s: "Your life story, past tenses",
+    v: ["der Lebenslauf|die Lebensläufe|CV","die Ausbildung|die Ausbildungen|vocational training","das Studium|die Studien|university studies","der Abschluss|die Abschlüsse|degree, qualification","das Abitur|–|school-leaving exam (like the bac)","der Umzug|die Umzüge|house move","die Entscheidung|die Entscheidungen|decision","der Wohnort|die Wohnorte|place of residence","heiraten||to marry","aufwachsen|ich wachse auf|to grow up","sich entscheiden||to decide","abschließen|ich schließe ab|to finish, complete"],
+    g: [["Präteritum (written past)", "Sie studierte in Sfax und zog 2020 nach Tunis."], ["Plusquamperfekt + nachdem", "Nachdem ich das Studium abgeschlossen hatte, fand ich eine Stelle."], ["als (once) vs wenn (every time)", "Als ich 18 war … / Wenn ich Zeit hatte …"]],
+    p: [["Nachdem ich mein Studium abgeschlossen hatte, bin ich umgezogen.","After I had finished my studies, I moved."],["Als ich ein Kind war, wollte ich Ärztin werden.","When I was a child, I wanted to be a doctor."],["Das war die beste Entscheidung meines Lebens.","That was the best decision of my life."],["Seitdem arbeite ich in der IT-Branche.","Since then I've worked in IT."]],
+    w: "Write your life story (about 150 words) using nachdem, als and bevor.", pr: "In long sentences, pause at commas." },
+  { t: "Bewerbung", s: "Job adverts, CV, cover letter",
+    v: ["die Bewerbung|die Bewerbungen|application","das Anschreiben|die Anschreiben|cover letter","das Vorstellungsgespräch|die Vorstellungsgespräche|job interview","die Stellenanzeige|die Stellenanzeigen|job advert","die Kenntnisse|(Pl.)|knowledge, skills","die Qualifikation|die Qualifikationen|qualification","das Zeugnis|die Zeugnisse|certificate, reference","das Praktikum|die Praktika|internship","die Fähigkeit|die Fähigkeiten|ability","der Arbeitgeber|die Arbeitgeber|employer","sich bewerben|ich bewerbe mich|to apply","einstellen|ich stelle ein|to hire"],
+    g: [["Relative clauses", "die Stelle, die Sie ausgeschrieben haben; das Team, mit dem ich arbeite"], ["Verbs with prepositions", "sich bewerben um, sich interessieren für, sich freuen auf"], ["da- and wo- words", "Ich freue mich darauf. Worauf freuen Sie sich?"]],
+    p: [["Mit großem Interesse habe ich Ihre Stellenanzeige gelesen.","I read your job advert with great interest."],["Ich bringe drei Jahre Berufserfahrung mit.","I bring three years of work experience."],["Ich habe gute Kenntnisse in Excel.","I have good Excel skills."],["Über eine Einladung zu einem Gespräch würde ich mich sehr freuen.","I would be very happy to be invited to an interview."]],
+    w: "Write a German CV (table style) and a cover letter for a real job advert. See Writing models for an example.", pr: "Speak clearly and calmly; pronounce endings like -t and -en." },
+  { t: "Im Büro", s: "Phone calls, emails, deadlines",
+    v: ["die Besprechung|die Besprechungen|meeting","der Anruf|die Anrufe|phone call","die Rückmeldung|die Rückmeldungen|reply, feedback","die Frist|die Fristen|deadline","der Kunde / die Kundin|die Kunden / die Kundinnen|customer, client","die Rechnung|die Rechnungen|invoice, bill","der Auftrag|die Aufträge|order, assignment","der Anhang|die Anhänge|attachment","der Drucker|die Drucker|printer","vereinbaren||to arrange","verschieben||to postpone","erledigen||to get done"],
+    g: [["um … zu / damit (in order to)", "Ich rufe an, um einen Termin zu vereinbaren."], ["Passive (present)", "Die Rechnung wird heute verschickt."], ["Infinitive with zu", "Es ist wichtig, die Frist einzuhalten."]],
+    p: [["Könnten Sie mich bitte mit Frau Weber verbinden?","Could you put me through to Ms Weber?"],["Ich rufe an, um einen Termin zu vereinbaren.","I'm calling to arrange an appointment."],["Ich melde mich bis Freitag bei Ihnen.","I'll get back to you by Friday."],["Kann ich ihr etwas ausrichten?","Can I take a message for her?"]],
+    w: "Email to a colleague: summarise a call with a customer and list 3 next steps with deadlines.", pr: "Spelling on the phone: A wie Anton, B wie Berta …" },
+  { t: "Meinungen", s: "Opinions, pros and cons, connectors",
+    v: ["der Vorteil|die Vorteile|advantage","der Nachteil|die Nachteile|disadvantage","die Meinung|die Meinungen|opinion","das Argument|die Argumente|argument","die Lösung|die Lösungen|solution","die Diskussion|die Diskussionen|discussion","der Standpunkt|die Standpunkte|point of view","das Problem|die Probleme|problem","die Kritik|–|criticism","zustimmen|ich stimme zu|to agree","widersprechen||to contradict","überzeugen||to convince"],
+    g: [["obwohl vs trotzdem", "Obwohl es regnet, gehe ich raus. Es regnet. Trotzdem gehe ich raus."], ["deshalb (that's why)", "Ich hatte keine Zeit, deshalb habe ich abgesagt."], ["Comparing", "Im Gegensatz zu … ; während …"]],
+    p: [["Meiner Meinung nach ist das keine gute Idee.","In my opinion that's not a good idea."],["Ich sehe das ein bisschen anders.","I see that a bit differently."],["Da hast du recht, aber das ist teuer.","You're right, but that's expensive."],["Ein großer Vorteil ist, dass man Zeit spart.","A big advantage is that you save time."]],
+    w: "Forum post (about 80 words): Should young people live abroad for a year? Give reasons.", pr: "Stress the important word: Ich finde das NICHT schlecht." },
+  { t: "Wohnen und Nachbarn", s: "Renting, problems, complaints",
+    v: ["der Vermieter|die Vermieter|landlord","der Mietvertrag|die Mietverträge|rental contract","die Nebenkosten|(Pl.)|utility costs","die Kaution|die Kautionen|deposit","der Nachbar|die Nachbarn|neighbour","die Heizung|die Heizungen|heating","der Schaden|die Schäden|damage","die Reparatur|die Reparaturen|repair","der Lärm|–|noise","der Hausmeister|die Hausmeister|caretaker","sich beschweren||to complain","renovieren||to renovate"],
+    g: [["Genitive", "die Wohnung meines Bruders; wegen des Lärms"], ["wegen, trotz, während", "Trotz des Regens … Während der Bauarbeiten …"], ["n-declension", "der Nachbar → den Nachbarn, dem Nachbarn"]],
+    p: [["Die Heizung funktioniert seit drei Tagen nicht.","The heating hasn't worked for three days."],["Wegen der Bauarbeiten ist es sehr laut.","Because of the building work it's very loud."],["Ich möchte einen Schaden melden.","I'd like to report some damage."],["Könnten Sie bitte so bald wie möglich jemanden schicken?","Could you send someone as soon as possible?"]],
+    w: "Complaint letter to your landlord (about 100 words): problem, since when, what you expect.", pr: "Hear the endings: den Nachbarn, dem Kunden." },
+  { t: "Umwelt", s: "Environment, society, future",
+    v: ["die Umwelt|–|environment","der Müll|–|rubbish","der Klimawandel|–|climate change","das Klima|–|climate","die Energie|die Energien|energy","die Gesellschaft|die Gesellschaften|society; company","der Verkehr|–|traffic","die Verpackung|die Verpackungen|packaging","die Zukunft|–|future","schützen||to protect","verbrauchen||to consume","recyceln||to recycle"],
+    g: [["Passive past", "Der Müll wurde getrennt. Das Gesetz ist beschlossen worden."], ["Future with werden", "Wir werden mehr Solarenergie nutzen."], ["Two-part connectors", "sowohl … als auch, weder … noch, entweder … oder, nicht nur … sondern auch"]],
+    p: [["In Deutschland wird der Müll getrennt.","In Germany rubbish is separated."],["Wir sollten weniger Plastik benutzen.","We should use less plastic."],["Das betrifft nicht nur uns, sondern auch unsere Kinder.","That affects not only us but our children too."],["Ich achte darauf, Energie zu sparen.","I make sure to save energy."]],
+    w: "Text (about 120 words): What does your city do for the environment? What should it do?", pr: "Compound words: stress the first part: UMweltschutz." },
+  { t: "Kultur und Freizeit", s: "Events, clubs, wishes",
+    v: ["die Ausstellung|die Ausstellungen|exhibition","die Veranstaltung|die Veranstaltungen|event","das Konzert|die Konzerte|concert","das Theater|die Theater|theatre","das Museum|die Museen|museum","die Eintrittskarte|die Eintrittskarten|entry ticket","der Verein|die Vereine|club, association","das Ehrenamt|die Ehrenämter|volunteer work","sich engagieren||to get involved","teilnehmen|ich nehme teil|to take part","sich treffen||to meet","vorschlagen|ich schlage vor|to suggest"],
+    g: [["Wishes with Konjunktiv II", "Wenn ich mehr Zeit hätte, würde ich Gitarre lernen."], ["Suggestions", "Hättest du Lust …? Wie wäre es mit …?"], ["All adjective endings", "mit einem guten Freund; wegen des schlechten Wetters"]],
+    p: [["Hättest du Lust, am Samstag ins Konzert zu gehen?","Would you like to go to a concert on Saturday?"],["Wenn ich mehr Zeit hätte, würde ich ein Instrument lernen.","If I had more time, I would learn an instrument."],["Ich engagiere mich ehrenamtlich in einem Verein.","I volunteer at an association."],["Wie wäre es mit Sonntag?","How about Sunday?"]],
+    w: "Informal email (about 80 words): tell a friend about an event and suggest meeting.", pr: "hatte vs hätte, war vs wäre (see the Pronunciation lab)." },
+  { t: "Prüfungstraining B1", s: "Presentations, planning together",
+    v: ["die Prüfung|die Prüfungen|exam","der Vortrag|die Vorträge|talk","die Folie|die Folien|slide","die Zusammenfassung|die Zusammenfassungen|summary","der Teil|die Teile|part","das Ergebnis|die Ergebnisse|result","die Note|die Noten|grade","die Notiz|die Notizen|note","bestehen||to pass (an exam)","durchfallen|ich falle durch|to fail","vorbereiten|ich bereite vor|to prepare","vorstellen|ich stelle vor|to present"],
+    g: [["Presentation structure", "Topic → my experience → my home country → pros and cons → my opinion → thanks"], ["Planning together", "Wie wäre es, wenn …? Ich schlage vor, dass … Einverstanden!"], ["Review", "Connectors, Konjunktiv II, passive, relative clauses"]],
+    p: [["Ich möchte euch heute das Thema Homeoffice vorstellen.","Today I'd like to present the topic of working from home."],["Zuerst erzähle ich von meinen Erfahrungen.","First I'll talk about my experiences."],["Wie ist die Situation in Ihrem Heimatland?","What's the situation in your home country?"],["Vielen Dank für Ihre Aufmerksamkeit.","Thank you for your attention."]],
+    w: "Do one official model test (Goethe or telc), timed. Check your writing with LanguageTool and rewrite it.", pr: "Record a 3-minute talk and mark every word you said wrong." },
+  ]},
+b2: { name: "B2", title: "Upper intermediate: work and argue in German", hours: "≈ 450–600+ hours total", next: null,
+  can: ["Work in German: meetings, presentations, polite emails", "Write structured opinion texts and formal complaints", "Follow news, podcasts and fast conversations", "Talk with native speakers without strain"],
+  units: [
+  { t: "Arbeitswelt", s: "Remote work, digitalisation, formal style",
+    v: ["die Digitalisierung|–|digitalisation","das Homeoffice|–|working from home","die Arbeitsbedingungen|(Pl.)|working conditions","die Vereinbarkeit|–|balance (work and family)","der Fachkräftemangel|–|shortage of skilled workers","die Arbeitskraft|die Arbeitskräfte|worker","die Flexibilität|–|flexibility","der Arbeitsmarkt|die Arbeitsmärkte|job market","die Belastung|die Belastungen|strain, pressure","die Gewerkschaft|die Gewerkschaften|trade union","ersetzen||to replace","sich anpassen|ich passe mich an|to adapt"],
+    g: [["Nominal style", "Wenn man digitalisiert … → Bei der Digitalisierung …"], ["Fixed verb + noun phrases", "eine Entscheidung treffen, in Frage kommen, zur Verfügung stehen"], ["Connectors", "zudem, folglich, dennoch, infolgedessen"]],
+    p: [["Es lässt sich nicht leugnen, dass sich die Arbeit verändert.","It can't be denied that work is changing."],["Ein entscheidender Vorteil besteht darin, dass man flexibel ist.","A decisive advantage is that you're flexible."],["Wir müssen bis Ende der Woche eine Entscheidung treffen.","We must make a decision by the end of the week."],["Das kommt für mich nicht in Frage.","That's out of the question for me."]],
+    w: "Opinion text (about 200 words): Is working from home the future?", pr: "Calm, factual tone; slow down on long nouns." },
+  { t: "Vorstellungsgespräch", s: "Interview questions, strengths, salary",
+    v: ["die Stärke|die Stärken|strength","die Schwäche|die Schwächen|weakness","die Gehaltsvorstellung|die Gehaltsvorstellungen|salary expectation","die Probezeit|die Probezeiten|probation period","die Weiterbildung|die Weiterbildungen|further training","der Werdegang|die Werdegänge|career path","die Einarbeitung|–|onboarding","die Verantwortung|–|responsibility","die Teamfähigkeit|–|ability to work in a team","die Belastbarkeit|–|ability to handle pressure","verhandeln||to negotiate","sich vorstellen|ich stelle mich vor|to introduce yourself"],
+    g: [["Konjunktiv II past", "Ich hätte gern früher gewechselt. Das wäre eine Chance gewesen."], ["Guessing with modals", "Das dürfte kein Problem sein."], ["Polite indirect questions", "Darf ich fragen, wie das Team aufgebaut ist?"]],
+    p: [["Zu meinen Stärken zählen Zuverlässigkeit und Teamfähigkeit.","My strengths include reliability and teamwork."],["In fünf Jahren sehe ich mich in einer leitenden Position.","In five years I see myself in a leading role."],["Meine Gehaltsvorstellung liegt bei zweiundfünfzigtausend Euro brutto im Jahr.","I'm expecting €52,000 gross a year."],["Darf ich fragen, wie die Einarbeitung aussieht?","May I ask what onboarding looks like?"]],
+    w: "Write and say out loud answers to 10 interview questions: Tell us about yourself, Why us?, strengths and weaknesses …", pr: "Statements go down at the end. Don't sound like you're asking." },
+  { t: "Besprechungen", s: "Meetings, agenda, minutes",
+    v: ["die Tagesordnung|die Tagesordnungen|agenda","das Protokoll|die Protokolle|minutes","der Zeitplan|die Zeitpläne|schedule","die Umsetzung|die Umsetzungen|implementation","der Teilnehmer|die Teilnehmer|participant","der Vorschlag|die Vorschläge|suggestion","die Abstimmung|die Abstimmungen|vote; coordination","das Budget|die Budgets|budget","die Zuständigkeit|die Zuständigkeiten|area of responsibility","beschließen||to decide (formally)","festhalten|ich halte fest|to note down","einhaken|ich hake ein|to jump in (in talk)"],
+    g: [["Passive with modal verbs", "Das Projekt muss bis Mai abgeschlossen werden."], ["Other ways to say passive", "Das lässt sich ändern. Das ist machbar. Das ist zu erledigen."], ["Reporting decisions", "Es wurde beschlossen, dass …"]],
+    p: [["Lassen Sie uns zum nächsten Punkt kommen.","Let's move on to the next point."],["Darf ich kurz einhaken?","May I jump in briefly?"],["Das lässt sich bis Ende des Monats umsetzen.","That can be done by the end of the month."],["Halten wir fest, dass das Budget reicht.","Let's note that the budget is enough."]],
+    w: "Write meeting minutes: date, people, 3 agenda points, decisions, tasks with names.", pr: "Speak in small groups of 3–5 words with short pauses." },
+  { t: "Medien und Information", s: "News, sources, reported speech",
+    v: ["die Quelle|die Quellen|source","die Schlagzeile|die Schlagzeilen|headline","die Umfrage|die Umfragen|survey","die Glaubwürdigkeit|–|credibility","der Beitrag|die Beiträge|report; post","die Berichterstattung|–|news coverage","die Zeitung|die Zeitungen|newspaper","die Falschmeldung|die Falschmeldungen|fake news","die Meinungsfreiheit|–|freedom of speech","der Journalist|die Journalisten|journalist","veröffentlichen||to publish","behaupten||to claim"],
+    g: [["Konjunktiv I (reported speech)", "Der Minister sagte, er sei zufrieden."], ["Citing sources", "laut, zufolge, nach Angaben von"], ["Summarising", "Der Text handelt von … Der Autor meint, dass …"]],
+    p: [["Laut einer aktuellen Studie arbeiten immer mehr Menschen von zu Hause.","According to a recent study more and more people work from home."],["Der Sprecher sagte, das Unternehmen sei gut aufgestellt.","The spokesperson said the company was in good shape."],["Es wird berichtet, dass die Preise steigen.","It is reported that prices are rising."],["Man sollte immer die Quelle prüfen.","You should always check the source."]],
+    w: "Summarise a news article from nachrichtenleicht or DW in 150 words using reported speech.", pr: "Shadow 2 minutes of DW slow news every day." },
+  { t: "Gesellschaft", s: "Diversity, integration, recognition of degrees",
+    v: ["die Herkunft|–|origin","die Chancengleichheit|–|equal opportunities","das Vorurteil|die Vorurteile|prejudice","die Vielfalt|–|diversity","die Anerkennung|–|recognition","die Einwanderung|–|immigration","die Staatsangehörigkeit|die Staatsangehörigkeiten|nationality","die Gleichberechtigung|–|equal rights","die Teilhabe|–|participation","die Diskriminierung|die Diskriminierungen|discrimination","sich einleben|ich lebe mich ein|to settle in","anerkennen|ich erkenne an|to recognise"],
+    g: [["Participles before nouns", "die seit Jahren steigenden Mieten; der von mir geschriebene Bericht"], ["Relative clauses with prepositions", "die Firma, bei der ich arbeite; das Land, aus dem ich komme"], ["Balanced arguments", "einerseits … andererseits; zwar … aber"]],
+    p: [["Ich bin der Ansicht, dass Vielfalt ein Gewinn ist.","I believe diversity is an asset."],["Einerseits ist es schwierig, andererseits lernt man viel.","On the one hand it's hard, on the other you learn a lot."],["Mein Abschluss wurde in Deutschland anerkannt.","My degree was recognised in Germany."],["Daraus folgt, dass wir mehr Sprachkurse brauchen.","It follows that we need more language courses."]],
+    w: "Discussion text (about 220 words): What helps people from abroad fit in at work?", pr: "Say long noun groups in one breath." },
+  { t: "Konflikte lösen", s: "Polite criticism, diplomacy, small words",
+    v: ["das Missverständnis|die Missverständnisse|misunderstanding","die Beschwerde|die Beschwerden|complaint","der Kompromiss|die Kompromisse|compromise","die Anmerkung|die Anmerkungen|remark","der Vorwurf|die Vorwürfe|reproach","der Konflikt|die Konflikte|conflict","die Rücksicht|–|consideration","das Verständnis|–|understanding","die Entschuldigung|die Entschuldigungen|apology","sich einigen||to reach agreement","vermitteln||to mediate","nachgeben|ich gebe nach|to give in"],
+    g: [["Small words (Modalpartikeln)", "doch, mal, ja, eben: Komm doch mal vorbei!"], ["Softening", "Ich würde vorschlagen … Wäre es möglich, dass …?"], ["Criticism in 3 steps", "Mir ist aufgefallen … dadurch … ich würde mir wünschen …"]],
+    p: [["Ich hätte da eine kleine Anmerkung.","I have a small remark."],["Könnten wir das vielleicht noch einmal besprechen?","Could we perhaps discuss that again?"],["Mir ist aufgefallen, dass die Fristen oft nicht eingehalten werden.","I've noticed that deadlines are often missed."],["Lassen Sie uns einen Kompromiss finden.","Let's find a compromise."]],
+    w: "Formal complaint (about 200 words) about a faulty product. See Writing models for an example.", pr: "Small words like doch and mal are not stressed." },
+  { t: "Wissenschaft und Zukunft", s: "AI, research, predictions",
+    v: ["die Forschung|die Forschungen|research","die Entwicklung|die Entwicklungen|development","die künstliche Intelligenz|–|artificial intelligence","die Auswirkung|die Auswirkungen|effect, impact","die Herausforderung|die Herausforderungen|challenge","die Erkenntnis|die Erkenntnisse|finding, insight","der Fortschritt|die Fortschritte|progress","die Studie|die Studien|study","die Technologie|die Technologien|technology","das Risiko|die Risiken|risk","erforschen||to research","vorhersagen|ich sage vorher|to predict"],
+    g: [["Future perfect and guesses", "Bis 2030 wird sich viel verändert haben. Er wird wohl krank sein."], ["je … desto", "Je mehr wir üben, desto besser sprechen wir."], ["indem / sodass", "Man lernt, indem man spricht. Es war laut, sodass ich nichts hörte."]],
+    p: [["Je mehr wir forschen, desto mehr verstehen wir.","The more we research, the more we understand."],["Künstliche Intelligenz wird viele Berufe verändern.","AI will change many jobs."],["Das dürfte eine große Herausforderung werden.","That will probably be a big challenge."],["Die Auswirkungen sind noch nicht absehbar.","The effects can't be predicted yet."]],
+    w: "Opinion text (about 220 words): Will AI take away more jobs than it creates?", pr: "Long words: stress the first part: FORschungsergebnisse." },
+  { t: "Prüfungstraining B2", s: "Forum post, formal message, talk",
+    v: ["die Gliederung|die Gliederungen|outline","die Einleitung|die Einleitungen|introduction","der Hauptteil|die Hauptteile|main part","der Schluss|die Schlüsse|conclusion","die Stellungnahme|die Stellungnahmen|statement of opinion","das Fazit|die Fazits|final summary","die These|die Thesen|claim, thesis","der Zusammenhang|die Zusammenhänge|connection","die Begründung|die Begründungen|reasoning","erläutern||to explain","begründen||to give reasons","zusammenfassen|ich fasse zusammen|to summarise"],
+    g: [["Writing part 1", "Forum post, about 150 words: answer every point, use connectors and an example"], ["Writing part 2", "Formal message, about 100 words: right tone, request, apology or complaint"], ["Speaking", "4-minute talk with pros, cons and your country, then a discussion"]],
+    p: [["In meinem Vortrag geht es um künstliche Intelligenz.","My talk is about AI."],["Darauf würde ich gern näher eingehen.","I'd like to go into that in more detail."],["Abschließend möchte ich sagen, dass Bildung entscheidend ist.","Finally, I'd like to say that education is key."],["Da muss ich Ihnen widersprechen.","I have to disagree with you there."]],
+    w: "Take two official model tests, timed. Write one text a day for 2 weeks.", pr: "Speak for 4 minutes without notes; record it and count your äh and ähm." },
+  ]},
+};
+
+/* EXAMS — the right answer is always written FIRST (options are shuffled on screen) */
+const EXAMS = {
+a1: {
+  read: "Hallo Sara,\n\nwie geht es dir? Ich wohne jetzt in Köln. Meine Wohnung ist klein, aber hell. Sie hat zwei Zimmer, eine Küche und einen Balkon. Die Miete ist 650 Euro. Ich arbeite in einem Café. Ich fange um acht Uhr an und habe um 16 Uhr Feierabend. Am Wochenende spiele ich Fußball. Kommst du mich im Mai besuchen?\n\nLiebe Grüße\nAmira\n\n————\nPraxis Dr. Weber\nSprechzeiten: Montag bis Freitag 8–12 Uhr\nDienstag und Donnerstag auch 15–18 Uhr",
+  readQ: [["Wo wohnt Amira?",["in Köln","in Berlin","in Tunis"]],["Wie ist die Wohnung?",["klein und hell","groß und dunkel","groß und hell"]],["Wie viele Zimmer hat die Wohnung?",["zwei","drei","eins"]],["Wann beginnt Amira mit der Arbeit?",["um 8 Uhr","um 16 Uhr","um 12 Uhr"]],["Was macht Amira am Wochenende?",["Sie spielt Fußball.","Sie arbeitet im Café.","Sie besucht Sara."]],["Kann man am Mittwoch um 16 Uhr zu Dr. Weber gehen?",["Nein","Ja"]]],
+  fillMc: [["Ich ___ aus Tunesien.",["komme","kommst","kommt"]],["Das ist ___ Bruder.",["mein","meine","meinen"]],["Ich kaufe ___ Apfel.",["einen","ein","eine"]],["Ich stehe um 7 Uhr ___.",["auf","an","ein"]],["Ich ___ leider nicht kommen.",["kann","kannst","können"]],["Ich habe ___ Brot.",["kein","nicht","keine"]]],
+  fillType: [["Ich ___ in Tunis. (wohnen)",["wohne"]],["Er ___ gut Deutsch. (sprechen)",["spricht"]],["Du ___ sehr nett. (sein)",["bist"]],["Sie (she) ___ gern Bücher. (lesen)",["liest"]]],
+  order: [[["kommst","du","Woher"],["woher kommst du"]],[["stehe","um","sieben","Uhr","auf","Ich"],["ich stehe um sieben uhr auf","um sieben uhr stehe ich auf"]],[["möchte","einen","Ich","Kaffee"],["ich möchte einen kaffee"]],[["am","Wochenende","gern","lese","ich"],["am wochenende lese ich gern","ich lese am wochenende gern","ich lese gern am wochenende"]]],
+  names: 3, words: 5, sentences: 0,
+},
+a2: {
+  read: "Liebe Kolleginnen und Kollegen,\n\nam Freitag, den 14. November, feiern wir das 10-jährige Jubiläum unserer Firma. Die Feier beginnt um 18 Uhr in der Kantine. Es gibt ein Buffet und Getränke. Bitte sagt bis Mittwoch Bescheid, ob ihr kommt. Wer möchte, kann seine Familie mitbringen. Am Freitag schließt das Büro schon um 15 Uhr, weil wir noch alles vorbereiten müssen.\n\nViele Grüße\nThomas Berger, Personalabteilung\n\n————\nVerkaufe Fahrrad, 2 Jahre alt, sehr guter Zustand, 120 €. Nur Abholung. Anrufen ab 18 Uhr.",
+  readQ: [["Was feiert die Firma?",["ihr Jubiläum (10 Jahre)","den Geburtstag von Thomas","Weihnachten"]],["Wo ist die Feier?",["in der Kantine","in einem Restaurant","bei Thomas zu Hause"]],["Bis wann soll man antworten?",["bis Mittwoch","bis Freitag","bis zum 14. November"]],["Darf man die Familie mitbringen?",["Ja","Nein","Nur die Kinder"]],["Warum schließt das Büro früher?",["weil man alles vorbereiten muss","weil alle krank sind","weil Thomas Urlaub hat"]],["Wann kann man wegen des Fahrrads anrufen?",["am Abend ab 18 Uhr","nur morgens","den ganzen Tag"]],["Bringt der Verkäufer das Fahrrad nach Hause?",["Nein, man muss es abholen.","Ja, kostenlos.","Ja, für 10 Euro."]]],
+  fillMc: [["Gestern ___ ich nach Berlin gefahren.",["bin","habe","war"]],["Ich lerne Deutsch, weil ich in Deutschland ___.",["arbeiten möchte","möchte arbeiten","arbeite möchte"]],["Das Geschenk gefällt ___ sehr.",["mir","mich","ich"]],["Ich kaufe den ___ Mantel.",["blauen","blaue","blauer"]],["Ich fühle ___ heute nicht gut.",["mich","mir","sich"]],["Weißt du, ___ er heute kommt?",["ob","wenn","dass"]],["Ich lege das Buch auf ___ Tisch.",["den","dem","der"]],["___ Sie mir bitte helfen?",["Könnten","Konnten","Kannst"]]],
+  fillType: [["Wir haben gestern Pizza ___. (essen)",["gegessen"]],["Der Zug ist pünktlich ___. (ankommen)",["angekommen"]],["Meine Schwester ist ___ als ich. (alt)",["älter"]],["Wenn ich Zeit ___, rufe ich dich an. (haben)",["habe"]]],
+  order: [[["Ich","komme","nicht","weil","ich","krank","bin"],["ich komme nicht weil ich krank bin","weil ich krank bin komme ich nicht"]],[["Wochenende","hast","Was","am","du","gemacht"],["was hast du am wochenende gemacht"]],[["mir","Kannst","sagen","du","wann","der","Zug","fährt"],["kannst du mir sagen wann der zug fährt"]],[["ein","möchte","Doppelzimmer","reservieren","Ich"],["ich möchte ein doppelzimmer reservieren"]]],
+  names: 3, words: 5, sentences: 0,
+},
+b1: {
+  read: "Seit einem Jahr arbeite ich zwei Tage pro Woche im Homeoffice. Am Anfang fand ich das super: Ich musste nicht mehr eine Stunde mit der S-Bahn fahren und konnte länger schlafen. Nach ein paar Monaten habe ich aber gemerkt, dass mir der Kontakt zu meinen Kollegen fehlt. Außerdem ist es zu Hause schwierig, Arbeit und Freizeit zu trennen, weil mein Laptop immer auf dem Küchentisch steht. Deshalb habe ich mir jetzt ein kleines Arbeitszimmer eingerichtet. Obwohl ich gern zu Hause arbeite, möchte ich nicht ganz auf das Büro verzichten. Für mich ist eine Mischung die beste Lösung.\n\nJana, 34, Hamburg",
+  readQ: [["Wie oft arbeitet Jana zu Hause?",["zwei Tage pro Woche","jeden Tag","nie"]],["Was war am Anfang ein Vorteil?",["Sie brauchte keine Zeit für den Weg zur Arbeit.","Sie verdiente mehr Geld.","Sie hatte mehr Kontakt zu Kollegen."]],["Welches Problem hat sie bemerkt?",["Ihr fehlt der Kontakt zu Kollegen.","Ihr Laptop ist kaputt.","Die S-Bahn ist zu teuer."]],["Was hat Jana gemacht?",["Sie hat ein Arbeitszimmer eingerichtet.","Sie hat gekündigt.","Sie ist umgezogen."]],["Was ist Janas Meinung?",["Eine Mischung aus Büro und Homeoffice ist am besten.","Homeoffice ist schlecht.","Man sollte nur im Büro arbeiten."]],["„auf etwas verzichten“ bedeutet hier:",["etwas aufgeben","etwas besuchen","etwas renovieren"]]],
+  fillMc: [["Nachdem ich gegessen ___, bin ich spazieren gegangen.",["hatte","habe","hätte"]],["Das ist die Firma, ___ ich arbeite.",["bei der","die","bei dem"]],["___ es regnet, gehen wir spazieren.",["Obwohl","Trotzdem","Deshalb"]],["Ich rufe an, ___ einen Termin zu vereinbaren.",["um","damit","für"]],["Wegen ___ Lärms kann ich nicht schlafen.",["des","dem","den"]],["Wenn ich mehr Zeit ___, würde ich reisen.",["hätte","habe","hatte"]],["Der Müll ___ in Deutschland getrennt.",["wird","werden","hat"]],["Ich interessiere mich ___ Politik.",["für","an","auf"]]],
+  fillType: [["Als Kind ___ ich in Sousse. (wohnen, Präteritum)",["wohnte"]],["Ich freue mich ___ die Ferien. (preposition)",["auf"]],["Morgen ___ es regnen. (Futur)",["wird"]],["Das ist der Mann, ___ ich gestern geholfen habe. (relative pronoun)",["dem"]]],
+  order: [[["obwohl","ich","müde","bin","gehe","ich","ins","Kino"],["obwohl ich müde bin gehe ich ins kino","ich gehe ins kino obwohl ich müde bin"]],[["um","Deutsch","zu","lernen","ziehe","ich","nach","Berlin"],["ich ziehe nach berlin um deutsch zu lernen","um deutsch zu lernen ziehe ich nach berlin"]],[["Die","Stelle","die","ich","gefunden","habe","ist","interessant"],["die stelle die ich gefunden habe ist interessant"]],[["wenn","ich","Zeit","hätte","würde","ich","mehr","lesen"],["wenn ich zeit hätte würde ich mehr lesen","ich würde mehr lesen wenn ich zeit hätte"]]],
+  names: 0, words: 6, sentences: 2,
+},
+b2: {
+  read: "Künstliche Intelligenz verändert die Arbeitswelt schneller als erwartet. Laut einer Umfrage unter 1.000 Unternehmen setzen bereits zwei Drittel KI-Programme ein, vor allem im Kundenservice und in der Verwaltung. Befürworter betonen, dass Routineaufgaben automatisiert würden und Beschäftigte dadurch mehr Zeit für anspruchsvolle Tätigkeiten hätten. Kritiker warnen hingegen, dass vor allem gering qualifizierte Arbeitsplätze wegfallen könnten. Die Gewerkschaften fordern deshalb, dass Unternehmen stärker in Weiterbildung investieren. Eine Arbeitsmarktexpertin erklärte, entscheidend sei nicht die Technologie selbst, sondern wie die Gesellschaft mit ihr umgehe. Wer sich rechtzeitig weiterbilde, werde von den Veränderungen eher profitieren.",
+  readQ: [["Wie viele der befragten Unternehmen nutzen KI?",["etwa zwei Drittel","etwa ein Drittel","fast alle"]],["Wo wird KI laut Text besonders eingesetzt?",["im Kundenservice und in der Verwaltung","in der Forschung und Medizin","in Schulen"]],["Was sagen die Befürworter?",["Beschäftigte haben mehr Zeit für anspruchsvolle Aufgaben.","KI ersetzt alle Arbeitsplätze.","KI ist zu teuer."]],["Was befürchten die Kritiker?",["Gering qualifizierte Jobs könnten wegfallen.","Die Gehälter steigen zu stark.","Unternehmen investieren zu viel."]],["Was fordern die Gewerkschaften?",["mehr Investitionen in Weiterbildung","ein Verbot von KI","kürzere Arbeitszeiten"]],["Was ist laut der Expertin entscheidend?",["wie die Gesellschaft mit der Technologie umgeht","die Technologie selbst","die Kosten"]],["Warum steht „entscheidend sei“ im Konjunktiv I?",["Es ist indirekte Rede.","Es ist ein Wunsch.","Es ist eine Bedingung."]]],
+  fillMc: [["Der Direktor sagte, er ___ mit dem Ergebnis zufrieden.",["sei","seid","sein"]],["Je mehr man übt, ___ besser spricht man.",["desto","als","sodass"]],["Das Projekt muss bis Mai abgeschlossen ___.",["werden","sein","worden"]],["Das Problem lässt ___ leicht lösen.",["sich","es","man"]],["Wir müssen heute eine Entscheidung ___.",["treffen","machen","geben"]],["Hätte ich das gewusst, ___ ich früher gekommen.",["wäre","hätte","würde"]],["Die ___ Preise belasten viele Familien.",["steigenden","steigende","gestiegen"]],["Man lernt eine Sprache am besten, ___ man sie täglich spricht.",["indem","sodass","damit"]]],
+  fillType: [["Das kommt für mich nicht in ___.",["Frage"]],["Bis 2030 wird sich viel verändert ___.",["haben"]],["Laut ___ Studie arbeiten viele im Homeoffice. (eine)",["einer"]],["Die Firma, ___ Chef ich kenne, sucht Mitarbeiter. (relative pronoun)",["deren"]]],
+  order: [[["je","mehr","wir","üben","desto","besser","sprechen","wir"],["je mehr wir üben desto besser sprechen wir"]],[["Das","lässt","sich","bis","Ende","des","Monats","umsetzen"],["das lässt sich bis ende des monats umsetzen"]],[["hätte","ich","das","gewusst","wäre","ich","früher","gekommen"],["hätte ich das gewusst wäre ich früher gekommen","ich wäre früher gekommen hätte ich das gewusst"]],[["Er","sagte","er","sei","mit","dem","Ergebnis","zufrieden"],["er sagte er sei mit dem ergebnis zufrieden"]]],
+  names: 0, words: 6, sentences: 2,
+},
+};
+const NAMES = ["Schmidt","Becker","Wagner","Müller","Fischer","Weber","Krause","Hoffmann","Schulz","Neumann","Braun","Wolf","Koch","Richter"];
+const LETTERS = {a:"A",b:"Be",c:"Ze",d:"De",e:"E",f:"Eff",g:"Ge",h:"Ha",i:"I",j:"Jott",k:"Ka",l:"Ell",m:"Emm",n:"Enn",o:"O",p:"Pe",q:"Ku",r:"Er",s:"Es",t:"Te",u:"U",v:"Fau",w:"We",x:"Iks",y:"Ypsilon",z:"Zett","ä":"Ä","ö":"Ö","ü":"Ü","ß":"Eszett"};
+
+const SOUNDS = [
+  { s: "ü", ipa: "[yː] / [ʏ]", tip: "Say “i”, then round your lips. It's the French “u” in tu.", w: ["über","müde","Glück","fünf"] },
+  { s: "ö", ipa: "[øː] / [œ]", tip: "Say “e” with round lips, like French peu.", w: ["schön","hören","können","zwölf"] },
+  { s: "ä", ipa: "[ɛː] / [ɛ]", tip: "Open “e”, like French è in mère.", w: ["Käse","spät","Männer","Äpfel"] },
+  { s: "ch (ach)", ipa: "[x]", tip: "After a, o, u, au. Same as Arabic خ (kh).", w: ["Bach","Buch","auch","acht"] },
+  { s: "ch (ich)", ipa: "[ç]", tip: "After e, i, ä, ö, ü, ei, l, n, r. Whisper the “y” of yes with lots of air. Not “sch”!", w: ["ich","Milch","Mädchen","Küche"] },
+  { s: "r", ipa: "[ʁ] / [ɐ]", tip: "At the start: in the throat, a soft Arabic غ (gh). At the end (-er): a short “a”.", w: ["rot","Reise","Lehrer","Wasser"] },
+  { s: "ei / ie", ipa: "[aɪ] / [iː]", tip: "Read the second letter: ei = “eye”, ie = long “ee”.", w: ["Wein","Wien","mein","Miete"] },
+  { s: "eu / äu", ipa: "[ɔʏ]", tip: "Like “oy” in boy.", w: ["heute","Leute","Häuser","Deutsch"] },
+  { s: "z", ipa: "[ts]", tip: "Always “ts”.", w: ["Zeit","Zug","zehn","Pizza"] },
+  { s: "s / ß", ipa: "[z] / [s]", tip: "s before a vowel = English z. ß and ss = sharp s.", w: ["Sonne","sagen","groß","Fluss"] },
+  { s: "st / sp", ipa: "[ʃt] / [ʃp]", tip: "At the start of a word: “sht” and “shp”.", w: ["Straße","Sport","verstehen","Beispiel"] },
+  { s: "w / v", ipa: "[v] / [f]", tip: "w = English v. v = usually f.", w: ["Wasser","wie","Vater","viel"] },
+  { s: "h", ipa: "[h] / silent", tip: "At the start: breathe it out. After a vowel: silent, and the vowel is long.", w: ["Haus","heute","fahren","Sohn"] },
+  { s: "-b -d -g", ipa: "[p] [t] [k]", tip: "At the end of a word they sound hard.", w: ["Tag","Hund","gelb","abfahren"] },
+  { s: "-ig", ipa: "[ɪç]", tip: "-ig at the end sounds like “ich”.", w: ["König","wichtig","zwanzig","richtig"] },
+  { s: "pf", ipa: "[pf]", tip: "p and f together, fast.", w: ["Apfel","Pferd","Kopf","Pflanze"] },
+];
+const PAIRS = [["Long / short a","Staat","Stadt"],["Long / short i","Miete","Mitte"],["Long / short o","Ofen","offen"],["Long / short ü","Hüte","Hütte"],["u / ü","Kuchen","Küchen"],["o / ö","schon","schön"],["i / ü","Kiste","Küste"],["ie / ü","vier","für"],["e / ö","lesen","lösen"],["a / ä","hatte","hätte"],["a / ä","war","wäre"],["ie / ei","Wien","Wein"],["Tiny stop","verreisen","vereisen"],["ch / sch","Kirche","Kirsche"],["ich / ach","Bäche","Bach"]];
+const MODELS = [
+  { lvl: "A1", t: "Short informal message", steps: ["Liebe … / Lieber … / Hallo …","Answer each point in one sentence","Viele Grüße + your name"],
+    text: "Liebe Anna,\n\ndanke für deine Nachricht! Am Samstag habe ich leider keine Zeit. Ich muss arbeiten. Hast du am Sonntag Zeit? Wir können um 15 Uhr Kaffee trinken.\n\nViele Grüße\nLina" },
+  { lvl: "A2", t: "Reply to an invitation", steps: ["Say thank you","Yes or no, with a reason","Ask one or two questions","Friendly ending"],
+    text: "Hallo Jonas,\n\nvielen Dank für deine Einladung zur Geburtstagsparty! Ich komme sehr gern. Soll ich etwas mitbringen? Ich kann einen Salat machen. Wie komme ich am besten zu dir?\n\nBis Samstag!\nLiebe Grüße\nLina" },
+  { lvl: "B1", t: "Formal email (asking for information)", steps: ["Subject line","Sehr geehrte Damen und Herren, (next line starts small)","Why you write","Questions: zunächst, außerdem, zum Schluss","Mit freundlichen Grüßen"],
+    text: "Anfrage zum Abendkurs Deutsch B2\n\nSehr geehrte Damen und Herren,\n\nich habe Ihre Anzeige für den Deutschkurs B2 gelesen und hätte noch einige Fragen.\n\nZunächst möchte ich wissen, wann der nächste Kurs beginnt. Außerdem würde mich interessieren, ob es auch Abendkurse gibt, da ich tagsüber arbeite. Könnten Sie mir zum Schluss bitte mitteilen, wie hoch die Kursgebühr ist?\n\nVielen Dank im Voraus für Ihre Antwort.\n\nMit freundlichen Grüßen\nLina Haddad" },
+  { lvl: "B1", t: "Forum post (your opinion)", steps: ["Topic in one sentence","Your opinion + 2 reasons","The other side (trotzdem)","Your own example","Short ending"],
+    text: "Ich finde das Thema Homeoffice sehr interessant. Meiner Meinung nach hat es viele Vorteile: Man spart Zeit, weil man nicht ins Büro fahren muss, und man kann sich die Arbeit freier einteilen. Trotzdem sehe ich auch Nachteile. Viele Menschen fühlen sich zu Hause allein. Ich persönlich arbeite gern zwei Tage pro Woche von zu Hause und drei Tage im Büro. So habe ich das Beste aus beiden Welten." },
+  { lvl: "B2", t: "Cover letter (Anschreiben)", steps: ["Subject: Bewerbung als …","Why this job","Your current job + results","Why this company","Languages, start date","Ask for an interview"],
+    text: "Bewerbung als Softwareentwicklerin\n\nSehr geehrte Frau Becker,\n\nmit großem Interesse habe ich Ihre Stellenanzeige gelesen. Da ich seit vier Jahren als Webentwicklerin in Tunis tätig bin und meine Erfahrung gern in einem internationalen Team einbringen möchte, bewerbe ich mich hiermit um diese Stelle.\n\nIn meiner aktuellen Position bin ich für die Entwicklung von Webanwendungen verantwortlich. Dabei arbeite ich eng mit Kunden aus Frankreich und Deutschland zusammen.\n\nMeine Deutschkenntnisse entsprechen dem Niveau B2; außerdem spreche ich fließend Arabisch, Französisch und Englisch. Ich könnte ab dem 1. Februar bei Ihnen beginnen.\n\nÜber eine Einladung zu einem persönlichen Gespräch freue ich mich sehr.\n\nMit freundlichen Grüßen\nLina Haddad" },
+  { lvl: "B2", t: "Formal complaint (Beschwerde)", steps: ["Subject with order number","Facts: what, when","The problems, exactly","What you want","A deadline"],
+    text: "Beschwerde über Ihre Lieferung (Bestellnummer 48213)\n\nSehr geehrte Damen und Herren,\n\nam 28. September habe ich in Ihrem Onlineshop einen Laptop bestellt, der am 3. Oktober geliefert wurde. Leider muss ich Ihnen mitteilen, dass das Gerät beschädigt angekommen ist: Der Bildschirm hat einen deutlichen Riss.\n\nDarüber hinaus wurde mir eine Lieferung innerhalb von zwei Werktagen zugesichert. Tatsächlich hat die Zustellung jedoch fünf Tage gedauert.\n\nIch bitte Sie daher, mir umgehend ein neues Gerät zuzusenden oder den Kaufpreis zu erstatten. Ich erwarte Ihre Rückmeldung bis zum 20. Oktober.\n\nMit freundlichen Grüßen\nLina Haddad" },
+];
+const RES = [
+  ["Main free courses", [["DW Learn German (Nicos Weg)","https://learngerman.dw.com/en/overview","A1–B1","Complete video course with exercises. Best partner for this site."],["VHS-Lernportal","https://www.vhs-lernportal.de/","A1–B2","Full free courses incl. German for work, with tutors who correct your writing. Sign-up needed."],["Deutsch.info","https://www.deutsch.info/","A1–B1","Short lessons with audio + info about life in Germany."]]],
+  ["Grammar practice", [["Schubert Verlag exercises","https://www.schubert-verlag.de/aufgaben/","A1–C1","Hundreds of free exercises sorted by level."],["Lingolia Deutsch","https://deutsch.lingolia.com/","A1–C1","Clear grammar explanations and tables."],["Verbformen","https://www.verbformen.de/","All","Look up any verb or noun form."]]],
+  ["Listening", [["Easy German (YouTube)","https://www.youtube.com/@EasyGerman","A2–C1","Street interviews with subtitles."],["nachrichtenleicht","https://www.nachrichtenleicht.de/","A2–B1","News in easy German, with audio."],["DW Deutsch lernen","https://www.dw.com/de/deutsch-lernen/s-2055","B1–C1","Top-Thema and slow news with transcripts."],["Coffee Break German","https://coffeebreaklanguages.com/coffeebreakgerman/","A1–B1","Podcast explained in English."]]],
+  ["Words and pronunciation", [["Forvo","https://forvo.com/languages/de/","All","Native speakers say any word."],["DWDS","https://www.dwds.de/","B1+","German dictionary with audio and examples."],["LEO","https://dict.leo.org/","All","German–English / German–French dictionary."],["Anki","https://apps.ankiweb.net/","All","Flashcards that repeat words at the right time."]]],
+  ["Writing, work and exams", [["LanguageTool","https://languagetool.org/","A2+","Checks your German texts for mistakes."],["Deutsch am Arbeitsplatz","https://www.deutsch-am-arbeitsplatz.de/","A2–B2","Free German for real work situations."],["Make it in Germany","https://www.make-it-in-germany.com/","–","Official portal for working in Germany: visas, recognition, jobs."],["Goethe-Institut exams","https://www.goethe.de/de/spr/kup/prf.html","A1–C2","Official free model tests for each level."],["telc","https://www.telc.net/","A1–C2","Other big exam provider, free model tests."]]],
+];
+
+/* HELPERS */
+const esc = s => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+const pv = s => { const [w, pl, en] = s.split("|"); return { w, pl: pl || "", en: en || "" }; };
+const isNoun = v => /^(der|die|das) /.test(v.w);
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const pick = (a, n) => shuffle(a).slice(0, n);
+const norm = s => String(s || "").toLowerCase().replace(/ä/g,"ae").replace(/ö/g,"oe").replace(/ü/g,"ue").replace(/ß/g,"ss").replace(/[.,!?;:"'„“”‚‘’()\-–—…]/g," ").replace(/\s+/g," ").trim();
+const stripArt = s => s.replace(/^(der|die|das) /, "");
+function lev(a, b) { const m = a.length, n = b.length; if (!m) return n; if (!n) return m; let prev = Array.from({ length: n + 1 }, (_, j) => j); for (let i = 1; i <= m; i++) { const cur = [i]; for (let j = 1; j <= n; j++) cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)); prev = cur; } return prev[n]; }
+function artClass(v) { if (v.pl === "(Pl.)") return "art-pl"; const a = v.w.split(" ")[0]; return a === "der" ? "art-der" : a === "die" ? "art-die" : a === "das" ? "art-das" : ""; }
+const sayBtn = (t, label) => `<button class="say" type="button" data-say="${esc(t)}" aria-label="Listen: ${esc(label || t)}">${ICON}</button>`;
+const levelVocab = lk => LEVELS[lk].units.flatMap(u => u.v.map(pv));
+const spellable = v => !v.w.includes("/") && !/[,!?…]/.test(v.w) && v.w.split(" ").length <= 2 && v.w.length <= 24;
+const KEYS = `<div class="keys">${["ä","ö","ü","ß","Ä","Ö","Ü"].map(k => `<button type="button" class="key" data-key="${k}" tabindex="-1">${k}</button>`).join("")}</div>`;
+
+/* SPEECH */
+const synth = window.speechSynthesis;
+let deVoice = null, rate = 0.9;
+function pickVoice() {
+  if (!synth) return;
+  const vs = synth.getVoices();
+  deVoice = vs.find(v => v.lang === "de-DE" && /google|natural|neural/i.test(v.name)) || vs.find(v => v.lang === "de-DE") || vs.find(v => (v.lang || "").toLowerCase().startsWith("de")) || null;
+  const el = document.getElementById("voiceStatus");
+  if (deVoice) { el.textContent = "German voice: " + deVoice.name + "."; el.classList.remove("warn"); }
+  else if (vs.length) { el.textContent = "No German voice on this device yet. Install one: Windows: Settings → Time & language → Speech. Android: Google Speech Services → German. iPhone: Settings → Accessibility → Spoken Content → Voices."; el.classList.add("warn"); }
+}
+if (synth) { pickVoice(); synth.onvoiceschanged = pickVoice; }
+function speak(text, btn, r) {
+  if (!synth) return;
+  synth.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = "de-DE"; if (deVoice) u.voice = deVoice; u.rate = r || rate;
+  if (btn) { btn.classList.add("playing"); u.onend = u.onerror = () => btn.classList.remove("playing"); }
+  synth.speak(u);
+}
+const spellText = name => [...name.toLowerCase()].map(c => LETTERS[c] || c).join(". ") + ".";
+
+/* PROGRESS — this browser + the viewer's private store in their account */
+let P = { done: {}, exams: {} };
+function merge(a, b) {
+  const out = { done: Object.assign({}, a.done || {}, b.done || {}), exams: Object.assign({}, a.exams || {}) };
+  for (const [k, e] of Object.entries(b.exams || {})) {
+    const x = out.exams[k] || {};
+    out.exams[k] = { best: Math.max(x.best || 0, e.best || 0), passed: !!(x.passed || e.passed), last: e.last ?? x.last ?? 0 };
+  }
+  return out;
+}
+try { const x = JSON.parse(localStorage.getItem("dw-progress") || "null"); if (x) P = merge(P, x); } catch (e) {}
+try { const old = JSON.parse(localStorage.getItem("dw-done") || "null"); if (old) P = merge(P, { done: old }); } catch (e) {}
+let remoteRef = null, saveTimer = null;
+function save() {
+  try { localStorage.setItem("dw-progress", JSON.stringify(P)); } catch (e) {}
+  if (!remoteRef) return;
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => { remoteRef.set({ done: P.done, exams: P.exams, updatedAt: Date.now() }).catch(() => {}); }, 700);
+}
+(async () => {
+  if (!window.claude || !window.claude.use) return;
+  try {
+    const [db, user] = await Promise.all([window.claude.use("db"), window.claude.use("user")]);
+    if (!db || !user) return;
+    const uid = await user.id();
+    if (!uid) return;
+    const ref = db.doc("data/users/" + uid + "/progress");
+    const snap = await ref.get();
+    const before = JSON.stringify(P);
+    if (snap.exists) P = merge(P, snap.data() || {});
+    remoteRef = ref;
+    document.getElementById("saveNote").textContent = "Progress saved to your account";
+    const changed = JSON.stringify(P) !== before;
+    if (!snap.exists || changed) save();
+    if (changed && (V.name === "home" || V.name === "level")) render();
+  } catch (e) {}
+})();
+const passed = lk => !!(P.exams[lk] && P.exams[lk].passed);
+const unlocked = lk => { const i = ORDER.indexOf(lk); return i === 0 || passed(ORDER[i - 1]); };
+const doneCount = lk => LEVELS[lk].units.filter((_, i) => P.done[lk + "-" + (i + 1)]).length;
+
+/* QUESTIONS (lesson quiz + exams) */
+let qSeq = 0;
+function mcQ(prompt, opts) { const order = shuffle(opts.map((_, i) => i)); return { id: "q" + (++qSeq), type: "mc", prompt, opts: order.map(i => opts[i]), ans: order.indexOf(0) }; }
+function fixedMc(prompt, opts, ansIdx) { return { id: "q" + (++qSeq), type: "mc", prompt, opts, ans: ansIdx, inline: true }; }
+function textQ(prompt, accept, extra) { return Object.assign({ id: "q" + (++qSeq), type: "text", prompt, accept }, extra || {}); }
+function orderQ(tokens, accept, prompt) { return { id: "q" + (++qSeq), type: "order", prompt: prompt || "Put the words in the right order.", tokens: shuffle(tokens), accept }; }
+function listenWordQ(v) { return textQ("Listen and write the word.", [v.w, stripArt(v.w)], { say: v.w, hint: v.en, show: v.w }); }
+function translateQ(v, pool) {
+  const same = pool.filter(x => x.en === v.en && isNoun(x)).map(x => x.w);
+  return textQ(`Write in German with der / die / das: “${v.en}”`, same.length ? same : [v.w], { show: v.w });
+}
+function grade(q, a) {
+  if (q.type === "mc") return a === q.ans;
+  if (q.type === "order") return Array.isArray(a) && q.accept.some(x => norm(x) === norm(a.map(i => q.tokens[i]).join(" ")));
+  const n = norm(a);
+  if (!n) return false;
+  if (q.mode === "sentence") { const t = norm(q.accept[0]); return 1 - lev(n, t) / Math.max(n.length, t.length) >= 0.9; }
+  return q.accept.some(x => norm(x) === n);
+}
+function correctText(q) {
+  if (q.type === "mc") return q.opts[q.ans];
+  if (q.type === "order") { const s = q.accept[0]; return s.charAt(0).toUpperCase() + s.slice(1); }
+  return q.show || q.accept[0];
+}
+function qHTML(q, n, a, checked) {
+  const state = checked ? (grade(q, a) ? "right" : "wrong") : "";
+  let body = "";
+  if (q.type === "mc") {
+    body = `<div class="opts${q.inline ? " inline" : ""}">${q.opts.map((o, i) => `<button type="button" class="opt${a === i ? " sel" : ""}" data-q="${q.id}" data-i="${i}" ${checked ? "disabled" : ""}>${esc(o)}</button>`).join("")}</div>`;
+  } else if (q.type === "order") {
+    const sel = Array.isArray(a) ? a : [];
+    body = `<div class="answer-line">${sel.map((ti, k) => `<button type="button" class="tok" data-q="${q.id}" data-rm="${k}" ${checked ? "disabled" : ""}>${esc(q.tokens[ti])}</button>`).join("")}</div>
+      ${checked ? "" : `<div class="toks">${q.tokens.map((t, i) => `<button type="button" class="tok${sel.includes(i) ? " used" : ""}" data-q="${q.id}" data-add="${i}">${esc(t)}</button>`).join("")}</div><p class="hint">Tap a word in the top line to remove it.</p>`}`;
+  } else {
+    let audio = "";
+    if (q.say || q.spell) {
+      const t = q.spell ? spellText(q.spell) : q.say;
+      audio = synth
+        ? `<div class="listen"><button type="button" class="btn ghost" data-say="${esc(t)}" data-rate="${q.spell ? 0.7 : ""}">${ICON} Play</button><button type="button" class="btn ghost" data-say="${esc(t)}" data-rate="0.55">Slower</button>${q.hint && !checked ? `<button type="button" class="linkbtn" data-hint="${q.id}">Show hint</button><span class="hint" id="hint-${q.id}" hidden>Meaning: ${esc(q.hint)}</span>` : ""}</div>`
+        : `<p class="hint warn">No audio on this device. ${q.spell ? "Type this name: " + esc(q.spell.split("").join(" – ")) : "Write the German word for: " + esc(q.hint || "")}</p>`;
+    }
+    body = `${audio}<input type="text" id="in-${q.id}" data-q="${q.id}" value="${esc(a || "")}" autocomplete="off" autocapitalize="off" spellcheck="false" ${checked ? "disabled" : ""} placeholder="Type your answer">${checked ? "" : KEYS}`;
+  }
+  const fb = checked ? `<p class="fb">${state === "right" ? "Correct!" : "Correct answer: " + esc(correctText(q))}</p>` : "";
+  return `<div class="q ${state}" id="box-${q.id}" data-n="${n}"><span class="qn">Question ${n}</span><p class="prompt">${esc(q.prompt)}</p>${body}${fb}</div>`;
+}
+
+/* STATE + VIEWS */
+let V = { name: "home" };
+let EXAM = null;   // running exam
+let PR = null;     // running lesson quiz
+const view = document.getElementById("view");
+function go(v) { V = v; render(); window.scrollTo({ top: 0 }); }
+
+function nextStep() {
+  for (const lk of ORDER) {
+    if (!unlocked(lk)) return null;
+    if (passed(lk)) continue;
+    const L = LEVELS[lk];
+    const i = L.units.findIndex((_, k) => !P.done[lk + "-" + (k + 1)]);
+    if (i >= 0) return { lk, ui: i, label: `${L.name} · Lesson ${i + 1}: ${L.units[i].t}`, btn: doneCount(lk) === 0 && i === 0 ? "Start lesson 1" : "Continue with lesson " + (i + 1) };
+    return { lk, exam: true, label: `You finished all ${L.name} lessons. Time for the ${L.name} exam!`, btn: `Start the ${L.name} exam` };
+  }
+  return { all: true };
+}
+
+function homeHTML() {
+  const n = nextStep();
+  const nextBox = !n ? "" : n.all
+    ? `<div class="next"><span class="eyebrow">Your next step</span><h2>You passed all four levels. Herzlichen Glückwunsch!</h2><p class="lede">Now book an official B2 exam with Goethe or telc. Keep practising with the tools below.</p></div>`
+    : `<div class="next"><span class="eyebrow">Your next step · just press the button</span><h2>${esc(n.label)}</h2><div><button class="btn big" type="button" ${n.exam ? `data-exam="${n.lk}"` : `data-lesson="${n.lk}:${n.ui}"`}>${esc(n.btn)} →</button></div></div>`;
+  const cards = ORDER.map(lk => {
+    const L = LEVELS[lk], open = unlocked(lk), ok = passed(lk), d = doneCount(lk), tot = L.units.length;
+    const prev = ORDER[ORDER.indexOf(lk) - 1];
+    const status = ok ? `<span class="pill ok">Passed ${P.exams[lk].best}%</span>` : open ? `<span class="pill open">Open</span>` : `<span class="pill lock">Locked</span>`;
+    const act = open ? `<button class="btn${ok ? " ghost" : ""}" type="button" data-level="${lk}">${ok ? "Review " + L.name : "Open " + L.name} →</button>`
+                     : `<button class="btn" type="button" disabled>${LOCK} Pass the ${LEVELS[prev].name} exam first</button>`;
+    return `<div class="lcard${open ? "" : " locked"}${ok ? " passed" : ""}"><div class="badge">${L.name}</div>
+      <div style="display:grid;gap:6px;min-width:0"><h3>${esc(L.title)}</h3><div class="meta">${status}<span>${d} of ${tot} lessons done</span><span>${L.hours}</span></div><div class="bar"><i style="width:${(d / tot) * 100}%"></i></div></div>
+      <div class="act">${act}</div></div>`;
+  }).join("");
+  return `<div class="title"><span class="eyebrow">Free German course · A1 → B2</span><h1>Learn German step by step</h1></div>
+  ${nextBox}
+  <div class="how">
+    <div><span class="n">1</span><h3>Do the lessons</h3><p>Each lesson has 5 short steps: words, grammar, sentences, writing, quiz.</p></div>
+    <div><span class="n">2</span><h3>Take the level exam</h3><p>Read, fill in the gaps, listen and spell, write.</p></div>
+    <div><span class="n">3</span><h3>Score 80% to move up</h3><p>Pass and the next level opens. Didn't pass? Practise and try again.</p></div>
+  </div>
+  <div class="title"><h2>Your levels</h2></div>
+  <div class="path">${cards}</div>
+  <div class="title"><h2>Extra tools</h2></div>
+  <div class="tools">
+    <button class="tool" type="button" data-go="aussprache"><h3>Pronunciation lab</h3><p>Hear every German sound. Paste any text and hear it read.</p></button>
+    <button class="tool" type="button" data-go="schreiben"><h3>Writing models</h3><p>Emails, cover letter, complaint: copy the structure.</p></button>
+    <button class="tool" type="button" data-go="ressourcen"><h3>Free resources</h3><p>The best free courses, podcasts and dictionaries.</p></button>
+  </div>`;
+}
+
+function levelHTML(lk) {
+  const L = LEVELS[lk], E = P.exams[lk];
+  const rows = L.units.map((u, i) => {
+    const d = !!P.done[lk + "-" + (i + 1)];
+    return `<div class="lrow${d ? " done" : ""}"><span class="num">${d ? "✓" : i + 1}</span><div style="min-width:0"><h3>${esc(u.t)}</h3><p>${esc(u.s)} · ${u.v.length} words</p></div>
+      <button class="btn${d ? " ghost" : ""}" type="button" data-lesson="${lk}:${i}">${d ? "Review" : "Start"}</button></div>`;
+  }).join("");
+  const nextL = L.next ? LEVELS[L.next].name : null;
+  return `<button class="back" type="button" data-go="home">← All levels</button>
+  <div class="title"><span class="eyebrow">Level ${L.name} · ${L.units.length} lessons · ${L.hours}</span><h1>${esc(L.title)}</h1></div>
+  <div class="todo"><b>What to do</b><p>Do the lessons from top to bottom. Each one takes 1 to 3 days. When you finish them all, take the exam at the bottom.</p></div>
+  <details class="can"><summary>What you'll be able to do after ${L.name}</summary><ul>${L.can.map(c => `<li>${esc(c)}</li>`).join("")}</ul></details>
+  <div class="lessons">${rows}</div>
+  <div class="examcard"><span class="eyebrow">Final step</span><h3>${L.name} exam</h3>
+    <p>4 parts: read, fill in the gaps, listen and spell, write. About 20–30 minutes. ${nextL ? `Score <b>${PASS_MARK}% or more</b> to unlock ${nextL}.` : `Score <b>${PASS_MARK}% or more</b> to finish the course.`}</p>
+    ${E ? `<p>Your best score: <b>${E.best}%</b> ${E.passed ? `<span class="pill ok">Passed</span>` : ""}</p>` : ""}
+    <div><button class="btn big" type="button" data-exam="${lk}">${E ? "Take the exam again" : "Start the exam"}</button></div></div>`;
+}
+
+const STEPS = ["Words", "Grammar", "Sentences", "Writing", "Quiz"];
+function makePractice(lk, ui) {
+  const u = LEVELS[lk].units[ui], vs = u.v.map(pv), qs = [];
+  pick(vs, 3).forEach(v => { const wrong = pick(vs.filter(x => x.en !== v.en), 2).map(x => x.en); qs.push(mcQ(`What does “${v.w}” mean?`, [v.en, ...wrong])); });
+  pick(vs.filter(v => isNoun(v) && !v.w.includes("/") && v.pl !== "(Pl.)"), 2).forEach(v => qs.push(fixedMc(`Which article? ___ ${stripArt(v.w)} (${v.en})`, ["der", "die", "das"], ["der", "die", "das"].indexOf(v.w.split(" ")[0]))));
+  pick(vs.filter(spellable), 2).forEach(v => qs.push(listenWordQ(v)));
+  const ph = u.p.map(p => p[0]).filter(s => !/[…\/]/.test(s) && s.split(" ").length <= 9);
+  if (ph.length) { const s = pick(ph, 1)[0]; qs.push(orderQ(s.replace(/[.!?,]/g, "").split(" "), [s], "Build the sentence: tap the words in the right order.")); }
+  return { qs, ans: {}, checked: false };
+}
+function lessonHTML() {
+  const { lk, ui, step } = V, L = LEVELS[lk], u = L.units[ui], id = lk + "-" + (ui + 1);
+  const stepper = `<div class="stepper">${STEPS.map((s, i) => `<button type="button" class="step${i === step ? " on" : i < step ? " past" : ""}" data-step="${i}"><i></i><span>${i + 1}. ${s}</span></button>`).join("")}</div>`;
+  let body = "", todo = "";
+  if (step === 0) {
+    const vs = u.v.map(pv);
+    todo = "Tap the speaker to hear each word. Say it out loud 3 times. Learn every noun <b>together with</b> der, die or das and its plural. Then tick “Hide English” and test yourself.";
+    body = `<div class="spread"><div class="legend"><span class="art-der"><b>der</b> masculine</span><span class="art-die"><b>die</b> feminine</span><span class="art-das"><b>das</b> neuter</span><span class="art-pl"><b>die</b> plural only</span></div>
+      <label class="toggle" for="hideEn"><input type="checkbox" id="hideEn"> Hide English</label></div>
+      <div class="words" id="wordGrid">${vs.map(v => {
+        const noun = isNoun(v), cls = artClass(v);
+        const plt = noun ? (v.pl === "(Pl.)" ? "plural only" : v.pl === "–" ? "no plural" : "plural: " + v.pl) : v.pl;
+        const spoken = noun && v.pl && v.pl !== "–" && v.pl !== "(Pl.)" ? v.w + ". " + v.pl : v.w;
+        return `<div class="word">${sayBtn(spoken, v.w)}<div style="min-width:0"><div class="w ${cls}">${esc(v.w)}</div>${plt ? `<div class="pl">${esc(plt)}</div>` : ""}<div class="en">${esc(v.en)}</div></div></div>`;
+      }).join("")}</div>`;
+  } else if (step === 1) {
+    todo = "Read each rule and listen to the example. Then say the example out loud.";
+    body = `<div class="card">${u.g.map(([r, ex]) => `<div class="rule"><h3>${esc(r)}</h3><div class="ex">${sayBtn(ex.replace(/[→=;\/]/g, ", "), ex)}<span>${esc(ex)}</span></div></div>`).join("")}</div>`;
+  } else if (step === 2) {
+    todo = "Listen to each sentence. Then play it again and speak at the same time as the voice. Do it 3 times.";
+    body = `<div class="card">${u.p.map(([de, en]) => `<div class="sent">${sayBtn(de)}<div><div class="de">${esc(de)}</div><div class="en">${esc(en)}</div></div></div>`).join("")}</div>
+      <div class="card"><h3>Pronunciation tip</h3><p>${esc(u.pr)}</p></div>`;
+  } else if (step === 3) {
+    todo = "Write the task below in the box. Use the words and sentences from this lesson. When you finish, read your text out loud.";
+    let draft = ""; try { draft = localStorage.getItem("dw-draft-" + id) || ""; } catch (e) {}
+    body = `<div class="card"><h3>Your task</h3><p>${esc(u.w)}</p></div>
+      <textarea id="draft-${id}" data-draft="${id}" placeholder="Schreib hier … (write here)">${esc(draft)}</textarea>
+      <div class="spread"><span class="hint" id="wc">${draft.trim() ? draft.trim().split(/\s+/).length : 0} words · saved in this browser</span>${KEYS}</div>
+      <p class="hint">Want corrections? Paste your text into <a href="https://languagetool.org/" target="_blank" rel="noopener">LanguageTool</a>, or send it to a free tutor on the <a href="https://www.vhs-lernportal.de/" target="_blank" rel="noopener">VHS-Lernportal</a>.</p>`;
+  } else {
+    if (!PR || PR.key !== id) PR = Object.assign(makePractice(lk, ui), { key: id });
+    const right = PR.checked ? PR.qs.filter(q => grade(q, PR.ans[q.id])).length : 0, good = right / PR.qs.length >= 0.8;
+    todo = "Answer all the questions, then press “Check my answers”. Look at your mistakes, then press “Finish lesson”.";
+    body = `<div class="qlist">${PR.qs.map((q, i) => qHTML(q, i + 1, PR.ans[q.id], PR.checked)).join("")}</div>
+      ${PR.checked ? `<div class="score ${good ? "pass" : "fail"}"><span class="eyebrow">Quiz result</span><div class="big">${right} / ${PR.qs.length}</div><p>${good ? "Great job! You're ready for the next lesson." : "Go back to step 1 and review the words, then try a new quiz. You can also finish the lesson now."}</p><div class="row"><button class="btn ghost" type="button" data-newquiz="1">Try a new quiz</button></div></div>` : `<div><button class="btn big" type="button" data-check="practice">Check my answers</button></div>`}`;
+  }
+  const isLast = step === STEPS.length - 1;
+  const nav = `<div class="navbar">${step > 0 ? `<button class="btn ghost" type="button" data-step="${step - 1}">← Back</button>` : `<span></span>`}
+    ${isLast ? (PR && PR.checked ? `<button class="btn big" type="button" data-finish="${lk}:${ui}">Finish lesson ✓</button>` : `<span></span>`) : `<button class="btn big" type="button" data-step="${step + 1}">Next: ${STEPS[step + 1]} →</button>`}</div>`;
+  return `<button class="back" type="button" data-level="${lk}">← ${L.name} lessons</button>
+    <div class="title"><span class="eyebrow">${L.name} · Lesson ${ui + 1} of ${L.units.length}</span><h1>${esc(u.t)}</h1></div>
+    ${stepper}<div class="todo"><b>Step ${step + 1} of 5: what to do</b><p>${todo}</p></div>${body}${nav}`;
+}
+
+function buildExam(lk) {
+  const X = EXAMS[lk], vocab = levelVocab(lk);
+  const nouns = vocab.filter(v => isNoun(v) && !v.w.includes("/") && v.pl !== "(Pl.)");
+  const listen = [];
+  pick(vocab.filter(spellable), X.words).forEach(v => listen.push(listenWordQ(v)));
+  pick(NAMES, X.names).forEach(n => listen.push(textQ("Listen: a name is spelled letter by letter. Write the name.", [n], { spell: n, show: n })));
+  if (X.sentences) {
+    const sents = LEVELS[lk].units.flatMap(u => u.p.map(p => p[0])).filter(s => !/[…\/]/.test(s) && s.split(" ").length <= 9);
+    pick(sents, X.sentences).forEach(s => listen.push(textQ("Listen and write the whole sentence.", [s], { say: s, mode: "sentence", show: s })));
+  }
+  const write = [...pick(nouns, 6).map(v => translateQ(v, vocab)), ...X.order.map(([t, a]) => orderQ(t, a))];
+  return {
+    lk, idx: -1, ans: {}, done: false,
+    secs: [
+      { name: "Lesen", en: "Read", todo: "Read the text carefully. Then choose the right answer for each question.", text: X.read, qs: X.readQ.map(([q, o]) => mcQ(q, o)) },
+      { name: "Lücken", en: "Fill in the blanks", todo: "Choose or type the word that fits the gap (___). The word in brackets tells you which verb or form to use.", qs: [...X.fillMc.map(([q, o]) => mcQ(q, o)), ...X.fillType.map(([q, a]) => textQ(q, a))] },
+      { name: "Hören & Buchstabieren", en: "Listen and spell", todo: "Press Play, listen, and type what you hear. You can play it as often as you want. Use the ä ö ü ß buttons if your keyboard doesn't have them.", qs: listen },
+      { name: "Schreiben", en: "Write", todo: "Write the German word with der, die or das. Then build sentences by tapping the words in the right order.", qs: write },
+    ],
+  };
+}
+function examHTML() {
+  const E = EXAM, L = LEVELS[E.lk];
+  if (E.idx === -1) {
+    const tot = E.secs.reduce((s, x) => s + x.qs.length, 0);
+    return `<button class="back" type="button" data-level="${E.lk}">← ${L.name} lessons</button>
+      <div class="title"><span class="eyebrow">Level exam</span><h1>${L.name} exam</h1></div>
+      <div class="todo"><b>How it works</b><p>There are 4 parts and ${tot} questions. Answer everything, then go to the next part. Your score appears at the end. You need <b>${PASS_MARK}%</b> (${Math.ceil(tot * PASS_MARK / 100)} of ${tot} correct) to pass${L.next ? " and unlock " + LEVELS[L.next].name : ""}. You can take it as often as you like; the questions change each time.</p></div>
+      <div class="parts">${E.secs.map((s, i) => `<div><b>Part ${i + 1}: ${esc(s.name)}</b><span>${esc(s.en)} · ${s.qs.length} questions</span></div>`).join("")}</div>
+      <div class="row"><button class="btn big" type="button" data-exnext="0">Start part 1 →</button></div>
+      <p class="hint">Turn your sound on for part 3.</p>`;
+  }
+  if (E.done) return examResultHTML();
+  const s = E.secs[E.idx], start = E.secs.slice(0, E.idx).reduce((a, x) => a + x.qs.length, 0);
+  const last = E.idx === E.secs.length - 1;
+  return `<div class="spread"><span class="eyebrow">${L.name} exam · Part ${E.idx + 1} of 4</span><button class="back" type="button" data-quit="1">Leave exam</button></div>
+    <div class="stepper" style="grid-template-columns:repeat(4,minmax(0,1fr))">${E.secs.map((x, i) => `<span class="step${i === E.idx ? " on" : i < E.idx ? " past" : ""}"><i></i><span>${i + 1}. ${esc(x.en)}</span></span>`).join("")}</div>
+    <div class="title"><h1>${esc(s.name)}</h1></div>
+    <div class="todo"><b>What to do</b><p>${esc(s.todo)}</p></div>
+    ${s.text ? `<div class="readtext">${esc(s.text)}</div>` : ""}
+    <div class="qlist">${s.qs.map((q, i) => qHTML(q, start + i + 1, E.ans[q.id], false)).join("")}</div>
+    <div class="navbar">${E.idx > 0 ? `<button class="btn ghost" type="button" data-exnext="${E.idx - 1}">← Previous part</button>` : "<span></span>"}
+      ${last ? `<button class="btn big" type="button" data-exfinish="1">Finish and see my score</button>` : `<button class="btn big" type="button" data-exnext="${E.idx + 1}">Next part →</button>`}</div>`;
+}
+function examResultHTML() {
+  const E = EXAM, L = LEVELS[E.lk];
+  const per = E.secs.map(s => ({ s, ok: s.qs.filter(q => grade(q, E.ans[q.id])).length }));
+  const ok = per.reduce((a, x) => a + x.ok, 0), tot = E.secs.reduce((a, x) => a + x.qs.length, 0);
+  const pct = Math.round(ok / tot * 100), pass = pct >= PASS_MARK;
+  const wrong = E.secs.flatMap(s => s.qs.filter(q => !grade(q, E.ans[q.id])));
+  const nextName = L.next ? LEVELS[L.next].name : null;
+  return `<div class="score ${pass ? "pass" : "fail"}">
+      <span class="eyebrow">${L.name} exam result</span>
+      <div class="big">${pct}%</div>
+      <h2>${pass ? (nextName ? `Bestanden! You passed. ${nextName} is now open.` : "Bestanden! You finished the whole course.") : `Not yet. You need ${PASS_MARK}% to pass.`}</h2>
+      <p>${ok} of ${tot} answers correct.${pass ? "" : " Look at your mistakes below, review the lessons where you were weak, then try again. The questions change each time."}</p>
+      <div class="secscore">${per.map(x => `<div><span>${esc(x.s.name)} (${esc(x.s.en)})</span><b>${x.ok} / ${x.s.qs.length}</b></div>`).join("")}</div>
+      <div class="row">${pass && nextName ? `<button class="btn big" type="button" data-level="${L.next}">Go to ${nextName} →</button>` : ""}
+        <button class="btn${pass && nextName ? " ghost" : ""}" type="button" data-exam="${E.lk}">Take the exam again</button>
+        <button class="btn ghost" type="button" data-level="${E.lk}">Back to ${L.name} lessons</button></div>
+    </div>
+    ${wrong.length ? `<div class="title"><h2>Your mistakes (${wrong.length})</h2></div><div class="qlist">${wrong.map((q, i) => qHTML(q, i + 1, E.ans[q.id], true)).join("")}</div>` : ""}`;
+}
+
+function pronHTML() {
+  return `<button class="back" type="button" data-go="home">← Home</button>
+  <div class="title"><span class="eyebrow">Tool</span><h1>Pronunciation lab</h1></div>
+  <div class="todo"><b>What to do</b><p>Tap a word to hear it, then repeat it out loud. Record yourself on your phone and compare. Paste any German text into the box to hear it read.</p></div>
+  <div class="card"><textarea id="readText" aria-label="German text">Guten Morgen! Ich heiße Lina und komme aus Tunesien. Ich lerne seit drei Monaten Deutsch, weil ich später in Deutschland arbeiten möchte.</textarea>
+    <div class="row"><button class="btn" type="button" id="readBtn">${ICON} Read aloud</button><button class="btn ghost" type="button" id="stopBtn">Stop</button>
+    <label class="toggle" for="rate">Speed <input type="range" id="rate" min="0.5" max="1.2" step="0.05" value="${rate}"> <output id="rateOut">${rate.toFixed(2)}×</output></label></div></div>
+  <div class="grid3">${SOUNDS.map(s => `<div class="card sound"><div class="row"><h3>${esc(s.s)}</h3><span class="ipa">${esc(s.ipa)}</span></div><p>${esc(s.tip)}</p><div class="chips">${s.w.map(w => `<button class="chip" type="button" data-say="${esc(w)}">${ICON}${esc(w)}</button>`).join("")}</div></div>`).join("")}</div>
+  <div class="title"><h2>Word pairs that sound almost the same</h2><p class="lede">Listen to both, then say them yourself.</p></div>
+  <div class="grid3">${PAIRS.map(([w, a, b]) => `<div class="card"><span class="eyebrow">${esc(w)}</span><div class="chips"><button class="chip" type="button" data-say="${esc(a)}">${ICON}${esc(a)}</button><button class="chip" type="button" data-say="${esc(b)}">${ICON}${esc(b)}</button></div></div>`).join("")}</div>`;
+}
+function writeHTML() {
+  return `<button class="back" type="button" data-go="home">← Home</button>
+  <div class="title"><span class="eyebrow">Tool</span><h1>Writing models</h1></div>
+  <div class="todo"><b>What to do</b><p>Open a model, read the steps, listen to the text. Then write your own text with the same steps.</p></div>
+  <div class="tablewrap"><table><thead><tr><th></th><th>Friends (du)</th><th>Formal (Sie)</th></tr></thead><tbody>
+    <tr><td><b>Start</b></td><td>Liebe Anna, / Lieber Tom, / Hallo,</td><td>Sehr geehrte Frau Becker, / Sehr geehrte Damen und Herren,</td></tr>
+    <tr><td><b>Next line</b></td><td colspan="2">starts with a small letter: “danke für …”, “ich schreibe Ihnen, weil …”</td></tr>
+    <tr><td><b>End</b></td><td>Viele Grüße / Liebe Grüße</td><td>Mit freundlichen Grüßen</td></tr></tbody></table></div>
+  <div class="qlist">${MODELS.map(m => `<details class="model"><summary>${m.lvl} · ${esc(m.t)}</summary><div class="mb"><ol class="clean">${m.steps.map(s => `<li>${esc(s)}</li>`).join("")}</ol><div class="letter">${esc(m.text)}</div><div><button class="btn ghost" type="button" data-say="${esc(m.text)}">${ICON} Listen</button></div></div></details>`).join("")}</div>`;
+}
+function resHTML() {
+  return `<button class="back" type="button" data-go="home">← Home</button>
+  <div class="title"><span class="eyebrow">Tool</span><h1>Free resources</h1></div>
+  <div class="todo"><b>What to do</b><p>Don't use everything. Pick one main course (Nicos Weg or VHS-Lernportal) and one listening source for your level.</p></div>
+  ${RES.map(([g, list]) => `<div class="title"><h2>${esc(g)}</h2></div><div class="grid3">${list.map(([n, u, l, d]) => `<div class="card res"><div class="spread"><h3><a href="${u}" target="_blank" rel="noopener">${esc(n)}</a></h3><span class="lv">${esc(l)}</span></div><p>${esc(d)}</p></div>`).join("")}</div>`).join("")}`;
+}
+
+function render() {
+  let h;
+  if (V.name === "level") h = unlocked(V.lk) ? levelHTML(V.lk) : homeHTML();
+  else if (V.name === "lesson") h = lessonHTML();
+  else if (V.name === "exam" && EXAM) h = examHTML();
+  else if (V.name === "aussprache") h = pronHTML();
+  else if (V.name === "schreiben") h = writeHTML();
+  else if (V.name === "ressourcen") h = resHTML();
+  else h = homeHTML();
+  view.innerHTML = h;
+  if (V.name === "aussprache") {
+    const r = document.getElementById("rate"), o = document.getElementById("rateOut");
+    r.addEventListener("input", () => { rate = parseFloat(r.value); o.textContent = rate.toFixed(2) + "×"; });
+    document.getElementById("readBtn").addEventListener("click", e => speak(document.getElementById("readText").value, e.currentTarget));
+    document.getElementById("stopBtn").addEventListener("click", () => synth && synth.cancel());
+  }
+}
+function curQs() { return V.name === "exam" && EXAM ? (EXAM.secs[EXAM.idx] || {}).qs || [] : PR ? PR.qs : []; }
+function curAns() { return V.name === "exam" && EXAM ? EXAM.ans : PR ? PR.ans : {}; }
+function refreshQ(qid) {
+  const q = curQs().find(x => x.id === qid), box = document.getElementById("box-" + qid);
+  if (q && box) box.outerHTML = qHTML(q, box.dataset.n, curAns()[qid], false);
+}
+
+let lastInput = null;
+document.addEventListener("focusin", e => { if (e.target.matches("input[type=text], textarea")) lastInput = e.target; });
+document.addEventListener("mousedown", e => { if (e.target.closest(".key")) e.preventDefault(); });
+document.addEventListener("click", e => {
+  const t = e.target.closest("button"); if (!t) return;
+  const d = t.dataset;
+  if (d.say !== undefined) { speak(d.say, t.classList.contains("say") ? t : null, d.rate ? parseFloat(d.rate) : undefined); return; }
+  if (d.key) {
+    const box = t.closest(".q"), el = box ? box.querySelector("input[type=text]") : lastInput;
+    if (!el || el.disabled) return;
+    const s = el.selectionStart ?? el.value.length, en = el.selectionEnd ?? s;
+    el.value = el.value.slice(0, s) + d.key + el.value.slice(en); el.focus(); el.setSelectionRange(s + 1, s + 1);
+    el.dispatchEvent(new Event("input", { bubbles: true })); return;
+  }
+  if (d.hint) { const h = document.getElementById("hint-" + d.hint); if (h) h.hidden = false; t.hidden = true; return; }
+  if (d.go) { if (d.go === "home") EXAM = null; go({ name: d.go }); return; }
+  if (d.level) { EXAM = null; go({ name: "level", lk: d.level }); return; }
+  if (d.lesson) { const [lk, ui] = d.lesson.split(":"); PR = null; go({ name: "lesson", lk, ui: +ui, step: 0 }); return; }
+  if (d.step !== undefined && V.name === "lesson") { go(Object.assign({}, V, { step: +d.step })); return; }
+  if (d.finish) { const [lk, ui] = d.finish.split(":"); P.done[lk + "-" + (+ui + 1)] = 1; save(); PR = null; go({ name: "level", lk }); return; }
+  if (d.check === "practice") { PR.checked = true; render(); const sc = document.querySelector(".score"); if (sc) sc.scrollIntoView({ block: "center" }); return; }
+  if (d.newquiz) { PR = null; render(); return; }
+  if (d.exam) { EXAM = buildExam(d.exam); go({ name: "exam" }); return; }
+  if (d.exnext !== undefined) { EXAM.idx = +d.exnext; render(); window.scrollTo({ top: 0 }); return; }
+  if (d.exfinish) {
+    const unanswered = EXAM.secs.flatMap(s => s.qs).filter(q => { const a = EXAM.ans[q.id]; return a === undefined || a === "" || (Array.isArray(a) && !a.length); }).length;
+    if (unanswered && !d.sure) { t.dataset.sure = "1"; t.textContent = `${unanswered} questions are empty. Tap again to finish anyway`; return; }
+    EXAM.done = true;
+    const tot = EXAM.secs.reduce((a, x) => a + x.qs.length, 0), ok = EXAM.secs.reduce((a, s) => a + s.qs.filter(q => grade(q, EXAM.ans[q.id])).length, 0);
+    const pct = Math.round(ok / tot * 100), prev = P.exams[EXAM.lk] || {};
+    P.exams[EXAM.lk] = { best: Math.max(prev.best || 0, pct), passed: !!prev.passed || pct >= PASS_MARK, last: pct };
+    save(); render(); window.scrollTo({ top: 0 }); return;
+  }
+  if (d.quit) { if (!d.sure) { t.dataset.sure = "1"; t.textContent = "Tap again to leave (your answers will be lost)"; return; } const lk = EXAM.lk; EXAM = null; go({ name: "level", lk }); return; }
+  if (d.q) {
+    const ans = curAns();
+    if (d.i !== undefined) ans[d.q] = +d.i;
+    else if (d.add !== undefined) { const a = Array.isArray(ans[d.q]) ? ans[d.q] : []; if (!a.includes(+d.add)) a.push(+d.add); ans[d.q] = a; }
+    else if (d.rm !== undefined) { const a = Array.isArray(ans[d.q]) ? ans[d.q] : []; a.splice(+d.rm, 1); ans[d.q] = a; }
+    refreshQ(d.q);
+  }
+});
+document.addEventListener("input", e => {
+  const el = e.target;
+  if (el.dataset.q) { curAns()[el.dataset.q] = el.value; return; }
+  if (el.dataset.draft) {
+    try { localStorage.setItem("dw-draft-" + el.dataset.draft, el.value); } catch (err) {}
+    const wc = document.getElementById("wc"); if (wc) wc.textContent = (el.value.trim() ? el.value.trim().split(/\s+/).length : 0) + " words · saved in this browser";
+  }
+});
+document.addEventListener("change", e => { if (e.target.id === "hideEn") document.getElementById("wordGrid").classList.toggle("hide-en", e.target.checked); });
+
+const h0 = (location.hash || "").slice(1);
+if (["aussprache", "schreiben", "ressourcen"].includes(h0)) V = { name: h0 };
+else if (LEVELS[h0]) V = { name: "level", lk: h0 };
+render();
+</script>
+
+</body>
+</html>
