@@ -1,8 +1,8 @@
-# Mein Deutschweg
+# GermanTop
 
 A free German course from zero to B2 in 16 weeks, with explanations in French or English.
 
-**Open it:** https://myriambs.github.io/mein-deutschweg/ (use Google Chrome or Microsoft Edge for the German voice and the microphone)
+**Open it:** https://myriambs.github.io/germantop/ (use Google Chrome or Microsoft Edge for the German voice and the microphone)
 
 ## What's inside
 

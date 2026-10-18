@@ -1,4 +1,4 @@
-/* Mein Deutschweg v4 — engine.
+/* GermanTop v4 — engine.
    Content lives in data/*.js (one file per level, registered with DW.level()).
    Views: home → level → unit (9 steps) → quiz runner; level exam with 5 parts (90% each). */
 'use strict';
@@ -306,7 +306,7 @@ function go(v) { if (rec) try { rec.abort(); } catch (e) {} if ('speechSynthesis
 
 function header() {
   return `<header class="top"><div class="wrap">
-    <button class="logo" data-act="home">Mein <span>Deutschweg</span></button>
+    <button class="logo" data-act="home">German<span>Top</span></button>
     <div class="hstats">
       <span class="pill" title="${L('Jours d’affilée', 'Day streak')}">🔥 ${liveStreak()}</span>
       <span class="pill" title="XP">${S.xp} XP</span>
@@ -321,7 +321,7 @@ const artClass = de => { const m = String(de).match(/^(der|die|das)\b/i); return
 
 function chooseLang() {
   return `<main class="wrap center-col"><div class="hello">
-    <p class="eyebrow">Mein Deutschweg</p>
+    <p class="eyebrow">GermanTop</p>
     <h1>Hallo! 👋</h1>
     <p class="lede">Choisis ta langue d’explication · Choose your explanation language</p>
     <div class="row"><button class="btn big" data-act="setlang" data-l="fr">Français</button><button class="btn big" data-act="setlang" data-l="en">English</button></div>
@@ -490,7 +490,7 @@ function quizView() {
   else if (q.t === 'speak') inner = `${q.ctx ? `<div class="ctx">${sayBtn(q.ctx.de)}<span><b>${esc(q.ctx.de)}</b><small>${esc(M(q.ctx))}</small></span></div>` : ''}
       ${q.open ? `<div class="ctx">${sayBtn(q.ask)}<b>${esc(q.ask)}</b></div><p class="sub">${esc(q.sub)}</p>` : `<p class="qtarget">${esc(q.target)} ${sayBtn(q.target)}</p><p class="sub">${esc(q.sub)}</p>`}
       <div class="mic-area">${canHear() ? `<button class="mic ${r.listening ? 'live' : ''}" data-act="mic" ${fb ? 'disabled' : ''}>🎙</button><span>${r.listening ? L('J’écoute… parle maintenant', 'Listening… speak now') : L('Appuie et parle', 'Press and speak')}</span>`
-        : `<p class="warn">${L('Le micro n’est pas disponible ici : dis la phrase à voix haute, écoute le modèle, puis note-toi honnêtement. Pour la correction automatique, ouvre myriambs.github.io/mein-deutschweg dans Chrome.', 'The microphone isn’t available here: say it out loud, listen to the model, then mark yourself honestly. For automatic checking, open myriambs.github.io/mein-deutschweg in Chrome.')}</p>${fb ? '' : `<div class="row"><button class="btn ghost" data-act="selfok">✓ ${L('Je l’ai bien dit', 'I said it right')}</button><button class="btn ghost" data-act="selfno">✗ ${L('J’ai fait des fautes', 'I made mistakes')}</button></div>`}`}</div>
+        : `<p class="warn">${L('Le micro n’est pas disponible ici : dis la phrase à voix haute, écoute le modèle, puis note-toi honnêtement. Pour la correction automatique, ouvre myriambs.github.io/germantop dans Chrome.', 'The microphone isn’t available here: say it out loud, listen to the model, then mark yourself honestly. For automatic checking, open myriambs.github.io/germantop in Chrome.')}</p>${fb ? '' : `<div class="row"><button class="btn ghost" data-act="selfok">✓ ${L('Je l’ai bien dit', 'I said it right')}</button><button class="btn ghost" data-act="selfno">✗ ${L('J’ai fait des fautes', 'I made mistakes')}</button></div>`}`}</div>
       ${r.heard ? `<p class="heard">${L('Entendu', 'Heard')} : « ${esc(r.heard)} »</p>` : ''}`;
   else if (q.t === 'write') inner = `<section class="task"><h3>${esc(M(q.task))}</h3><p class="lede">${L('Minimum', 'At least')} ${q.task.min} ${L('mots', 'words')}. ${L('Points à inclure', 'Points to include')} : ${q.task.req.map(x => `<code>${esc(x.split('=')[0])}</code>`).join(' ')}</p></section>
       <textarea id="ans" class="ans big" lang="de" rows="8" spellcheck="false" ${fb || r.busy ? 'disabled' : ''} placeholder="${L('Écris ton texte en allemand…', 'Write your text in German…')}">${esc(r.given || '')}</textarea>
