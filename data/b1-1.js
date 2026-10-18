@@ -21,7 +21,7 @@ t: wir / Sie | hatten gearbeitet | waren gefahren
 ! Règle des temps : nachdem + **Plusquamperfekt** → principale au **Präteritum**. nachdem + **Perfekt** → principale au **présent**. | Tense rule: nachdem + **past perfect** → main clause **simple past**. nachdem + **perfect** → main clause **present**.
 # bevor = avant que | bevor = before
 = **Bevor** ich nach Deutschland **kam**, **habe** ich einen Kurs **gemacht**. | Avant de venir en Allemagne, j’ai suivi un cours. | Before I came to Germany, I did a course.
-* bevor : les deux actions au **même temps**. | bevor: both actions in the **same tense**.
+* bevor : les deux actions au **même temps verbal**. | bevor: both actions in the **same tense**.
 # Raconter une vie | Telling a life story
 t: geboren werden (ich wurde 1995 geboren) | aufwachsen | zur Schule gehen | eine Ausbildung machen
 t: sich verlieben | heiraten | Kinder bekommen | in Rente gehen

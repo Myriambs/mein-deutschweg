@@ -643,7 +643,7 @@ t: stehen → stand | sterben → starb | tragen → trug | treffen → traf
 t: trinken → trank | vergessen → vergaß | verlieren → verlor | ziehen → zog
 = Es **war** einmal ein König, der drei Töchter **hatte**. | Il était une fois un roi qui avait trois filles. | Once upon a time there was a king who had three daughters.
 # La déclinaison en -n | The n-declension
-> Certains noms **masculins** prennent **-n / -en** à **tous les cas sauf le nominatif singulier**. | Some **masculine** nouns take **-n / -en** in **every case except the nominative singular**.
+> Certains noms **masculins** prennent **-n / -en** dans **tous les cas sauf le nominatif singulier**. | Some **masculine** nouns take **-n / -en** in **every case except the nominative singular**.
 T: ~ | der Kollege | der Student | der Mensch | der Herr
 t: Nom. | der Kollege | der Student | der Mensch | der Herr
 t: Akk. | den Kollege**n** | den Student**en** | den Mensch**en** | den Herr**n**

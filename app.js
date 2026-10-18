@@ -142,7 +142,8 @@ function say(text, rate) {
   })), Promise.resolve());
 }
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-let rec = null;
+let rec = null, srBlocked = false; // srBlocked: the page may not use the microphone (e.g. inside claude.ai)
+const canHear = () => !!SR && !srBlocked;
 function hear() {
   return new Promise(res => {
     if (!SR) return res({ err: 'unsupported' });
@@ -358,7 +359,7 @@ function homeView() {
     <div class="title"><p class="eyebrow">${L('De zéro à B2 en 4 mois', 'From zero to B2 in 4 months')}</p><h1>${L('Ton chemin vers l’allemand', 'Your road to German')}</h1></div>
     ${nextCard}
     <section class="planrow"><div><b>${t('plan')}</b><span>${planLine}</span>${bar(pi.done / pi.total * 100)}</div>
-      <div class="row"><button class="btn ghost" data-act="plan">${t('plan')}</button><button class="btn ghost" data-act="mistakes">${t('mistakes')} (${nm})</button></div></section>
+      <div class="row"><button class="btn ghost" data-act="plan">${t('plan')}</button><button class="btn ghost" data-act="mistakes">${t('mistakes')} (${nm})</button><button class="btn ghost" data-act="tools">${L('Boîte à outils', 'Toolbox')}</button></div></section>
     <section class="path">${LEVELS.map((lv, i) => levelCard(lv, i)).join('')}</section>
   </main>`;
 }
@@ -456,7 +457,7 @@ function unitView(u, stepK) {
     ${tabs}<section class="stepbody stack">${body}</section>
     <div class="spread">${prev ? `<button class="btn ghost" data-act="unit" data-id="${u.id}" data-step="${prev.k}">← ${L(prev.fr, prev.en)}</button>` : '<span></span>'}${nxt ? `<button class="btn ghost" data-act="unit" data-id="${u.id}" data-step="${nxt.k}">${L(nxt.fr, nxt.en)} →</button>` : ''}</div></main>`;
 }
-const micNote = () => SR ? '' : `<p class="warn">${L('Ton navigateur ne peut pas t’entendre. Ouvre le site dans Google Chrome ou Microsoft Edge (avec un micro) pour la correction de la prononciation.', 'Your browser can’t hear you. Open the site in Google Chrome or Microsoft Edge (with a microphone) to get pronunciation feedback.')}</p>`;
+const micNote = () => canHear() ? '' : `<p class="warn">${L('Ton navigateur ne peut pas t’entendre. Ouvre le site dans Google Chrome ou Microsoft Edge (avec un micro) pour la correction de la prononciation.', 'Your browser can’t hear you. Open the site in Google Chrome or Microsoft Edge (with a microphone) to get pronunciation feedback.')}</p>`;
 
 /* ---------------- quiz runner ---------------- */
 function startQuiz(o) { RUN = Object.assign({ i: 0, res: [], phase: 'ask', given: null, sel: [], plays: 0 }, o); V = { view: 'quiz' }; render(); window.scrollTo(0, 0); autoPlay(); }
@@ -488,8 +489,8 @@ function quizView() {
       <div class="chips">${q.chips.map((c, i) => `<button class="chip" data-act="chip" data-i="${i}" ${r.sel.includes(i) || fb ? 'disabled' : ''}>${esc(c)}</button>`).join('')}</div>`;
   else if (q.t === 'speak') inner = `${q.ctx ? `<div class="ctx">${sayBtn(q.ctx.de)}<span><b>${esc(q.ctx.de)}</b><small>${esc(M(q.ctx))}</small></span></div>` : ''}
       ${q.open ? `<div class="ctx">${sayBtn(q.ask)}<b>${esc(q.ask)}</b></div><p class="sub">${esc(q.sub)}</p>` : `<p class="qtarget">${esc(q.target)} ${sayBtn(q.target)}</p><p class="sub">${esc(q.sub)}</p>`}
-      <div class="mic-area">${SR ? `<button class="mic ${r.listening ? 'live' : ''}" data-act="mic" ${fb ? 'disabled' : ''}>🎙</button><span>${r.listening ? L('J’écoute… parle maintenant', 'Listening… speak now') : L('Appuie et parle', 'Press and speak')}</span>`
-        : `<p class="warn">${L('Pas de micro dans ce navigateur : dis la phrase à voix haute, écoute le modèle, puis note-toi honnêtement.', 'No microphone in this browser: say it out loud, listen to the model, then mark yourself honestly.')}</p>${fb ? '' : `<div class="row"><button class="btn ghost" data-act="selfok">✓ ${L('Je l’ai bien dit', 'I said it right')}</button><button class="btn ghost" data-act="selfno">✗ ${L('J’ai fait des fautes', 'I made mistakes')}</button></div>`}`}</div>
+      <div class="mic-area">${canHear() ? `<button class="mic ${r.listening ? 'live' : ''}" data-act="mic" ${fb ? 'disabled' : ''}>🎙</button><span>${r.listening ? L('J’écoute… parle maintenant', 'Listening… speak now') : L('Appuie et parle', 'Press and speak')}</span>`
+        : `<p class="warn">${L('Le micro n’est pas disponible ici : dis la phrase à voix haute, écoute le modèle, puis note-toi honnêtement. Pour la correction automatique, ouvre myriambs.github.io/mein-deutschweg dans Chrome.', 'The microphone isn’t available here: say it out loud, listen to the model, then mark yourself honestly. For automatic checking, open myriambs.github.io/mein-deutschweg in Chrome.')}</p>${fb ? '' : `<div class="row"><button class="btn ghost" data-act="selfok">✓ ${L('Je l’ai bien dit', 'I said it right')}</button><button class="btn ghost" data-act="selfno">✗ ${L('J’ai fait des fautes', 'I made mistakes')}</button></div>`}`}</div>
       ${r.heard ? `<p class="heard">${L('Entendu', 'Heard')} : « ${esc(r.heard)} »</p>` : ''}`;
   else if (q.t === 'write') inner = `<section class="task"><h3>${esc(M(q.task))}</h3><p class="lede">${L('Minimum', 'At least')} ${q.task.min} ${L('mots', 'words')}. ${L('Points à inclure', 'Points to include')} : ${q.task.req.map(x => `<code>${esc(x.split('=')[0])}</code>`).join(' ')}</p></section>
       <textarea id="ans" class="ans big" lang="de" rows="8" spellcheck="false" ${fb || r.busy ? 'disabled' : ''} placeholder="${L('Écris ton texte en allemand…', 'Write your text in German…')}">${esc(r.given || '')}</textarea>
@@ -597,6 +598,7 @@ async function doMic() {
   r.listening = true; r.heard = ''; render();
   const res = await hear();
   r.listening = false;
+  if (res.err && /not-allowed|service-not-allowed|audio-capture|start|unsupported/.test(res.err)) { srBlocked = true; r.heard = ''; render(); return; }
   if (res.err) { r.heard = res.err === 'not-allowed' ? L('Micro refusé : autorise le micro dans le navigateur.', 'Microphone blocked: allow it in your browser.') : res.err === 'no-speech' ? L('Je n’ai rien entendu. Réessaie plus près du micro.', 'I heard nothing. Try again closer to the mic.') : res.err; render(); return; }
   if (!res.alts.length) { r.heard = L('Je n’ai rien entendu.', 'I heard nothing.'); render(); return; }
   let g;
@@ -691,6 +693,22 @@ function mistakesView() {
     ${list.length ? `<div class="row"><button class="btn big" data-act="drillmistakes">${L('M’entraîner sur mes erreurs', 'Practise my mistakes')} (${Math.min(15, list.length)}) →</button></div>
     <section class="review">${list.slice(0, 60).map(m => reviewLine({ q: m.q, given: null })).join('')}</section>` : `<p class="fb good">${L('Aucune erreur pour l’instant.', 'No mistakes for now.')}</p>`}</main>`;
 }
+function toolsView() {
+  const X = window.DW.tools; if (!X) return '';
+  const tab = V.tab || 'sounds';
+  const tabs = [['sounds', L('Prononciation', 'Pronunciation')], ['models', L('Modèles de textes', 'Writing models')], ['res', L('Ressources gratuites', 'Free resources')]];
+  let body = '';
+  if (tab === 'sounds') body = `<section class="set"><h3>${L('Lire n’importe quel texte allemand', 'Read any German text aloud')}</h3>
+      <textarea id="readbox" class="ans" lang="de" rows="3">Guten Morgen! Ich heiße Sara und komme aus Tunesien. Ich lerne Deutsch, weil ich später in Deutschland arbeiten möchte.</textarea>
+      <div class="row"><button class="btn" data-act="readbox">🔊 ${L('Lire', 'Read aloud')}</button><button class="btn ghost" data-act="readbox" data-slow="1">🐢 ${t('slow')}</button></div></section>
+    <div class="tgrid">${X.sounds.map(x => `<article class="tcard"><div class="spread"><h3>${esc(x.s)}</h3><code>${esc(x.ipa)}</code></div><p>${esc(M(x))}</p><div class="chips">${x.w.map(w => `<button class="chip" data-act="say" data-t="${esc(w)}">🔊 ${esc(w)}</button>`).join('')}</div></article>`).join('')}</div>
+    <h3>${L('Paires de mots presque identiques', 'Word pairs that sound almost the same')}</h3>
+    <div class="tgrid">${X.pairs.map(x => `<article class="tcard"><span class="eyebrow">${esc(L(x[0], x[1]))}</span><div class="chips"><button class="chip" data-act="say" data-t="${esc(x[2])}">🔊 ${esc(x[2])}</button><button class="chip" data-act="say" data-t="${esc(x[3])}">🔊 ${esc(x[3])}</button></div></article>`).join('')}</div>`;
+  else if (tab === 'models') body = X.models.map(m => `<details class="task"><summary>${m.lvl} · ${esc(M(m))}</summary><ol>${(S.lang === 'en' ? m.steps.en : m.steps.fr).map(x => `<li>${esc(x)}</li>`).join('')}</ol><p class="de-text letter">${esc(m.text)}</p><div class="row"><button class="btn ghost" data-act="say" data-t="${esc(m.text)}">🔊 ${t('listen')}</button></div></details>`).join('');
+  else body = X.res.map(g => `<h3>${esc(M(g))}</h3><div class="tgrid">${g.list.map(r => `<article class="tcard"><div class="spread"><h3><a href="${r[1]}" target="_blank" rel="noopener">${esc(r[0])}</a></h3><code>${esc(r[2])}</code></div><p>${esc(S.lang === 'en' ? r[4] : r[3])}</p></article>`).join('')}</div>`).join('');
+  return `<main class="wrap stack"><button class="back" data-act="home">${t('back')}</button><div class="title"><h1>${L('Boîte à outils', 'Toolbox')}</h1></div>
+    <nav class="row">${tabs.map(([k, n]) => `<button class="btn ${k === tab ? '' : 'ghost'}" data-act="tools" data-tab="${k}">${n}</button>`).join('')}</nav>${body}</main>`;
+}
 function settingsView() {
   const v = voice();
   return `<main class="wrap stack"><button class="back" data-act="home">${t('back')}</button><div class="title"><h1>${t('settings')}</h1></div>
@@ -718,6 +736,7 @@ function render() {
   else if (V.view === 'plan') main = planView();
   else if (V.view === 'mistakes') main = mistakesView();
   else if (V.view === 'settings') main = settingsView();
+  else if (V.view === 'tools') main = toolsView();
   app.innerHTML = header() + main;
   const ans = $('#ans');
   if (ans && RUN && RUN.phase === 'ask' && !RUN.busy) {
@@ -737,6 +756,8 @@ const ACT = {
   reset: () => { const keep = { lang: S.lang, voice: S.voice, rate: S.rate }; S = Object.assign(DEF(), keep); save(); go({ view: 'home' }); },
   plan: () => go({ view: 'plan' }),
   mistakes: () => go({ view: 'mistakes' }),
+  tools: d => go({ view: 'tools', tab: d.tab }),
+  readbox: d => { const b = $('#readbox'); if (b) say(b.value, d.slow ? 0.7 : undefined); },
   level: d => go({ view: 'level', id: d.id }),
   exam: d => go({ view: 'exam', id: d.id }),
   unit: d => { const u = unitById(d.id); const us = US(u.id); go({ view: 'unit', id: d.id, step: d.step || (STEPS.find(s => !us.steps[s.k]) || STEPS[8]).k }); },

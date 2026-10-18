@@ -459,7 +459,7 @@ t: Wie viel **kostet** das? | Ich möchte wissen, wie viel das **kostet**.
 > Une question **sans mot W** devient une question avec **ob** (= si). | A question **without a W-word** becomes a question with **ob** (= whether).
 t: **Brauche** ich einen Termin? | Wissen Sie, **ob** ich einen Termin **brauche**?
 t: **Kann** ich hier bezahlen? | Ich weiß nicht, **ob** ich hier bezahlen **kann**.
-! **ob** = si (question). **wenn** = si (condition). « Je ne sais pas **si** il vient » → Ich weiß nicht, **ob** er kommt. | **ob** = whether (question). **wenn** = if (condition). “I don’t know if he’s coming” → Ich weiß nicht, **ob** er kommt.
+! **ob** = si (question). **wenn** = si (condition). « Je ne sais pas **s’il** vient » → Ich weiß nicht, **ob** er kommt. | **ob** = whether (question). **wenn** = if (condition). “I don’t know if he’s coming” → Ich weiß nicht, **ob** er kommt.
 # Phrases d’introduction | Lead-in phrases
 t: Können Sie mir sagen, … | Wissen Sie, … | Ich möchte wissen, …
 t: Darf ich fragen, … | Ich weiß nicht, … | Ich frage mich, …
@@ -642,7 +642,7 @@ Lena | Nichts, das Konzert ist gratis. Wir treffen uns am Café, in dem wir letz
 Karim | Perfekt. Bringst du deine Freundin mit, die aus Wien kommt? | Parfait. Tu amènes ton amie qui vient de Vienne ? | Perfect. Are you bringing your friend who’s from Vienna?
 Lena | Ja, sie freut sich schon! | Oui, elle a déjà hâte ! | Yes, she’s already looking forward to it!
 `,
-wr: { fr: 'Écris un petit article sur un film, un livre, un concert ou une exposition que tu as aimé. Utilise au moins 4 propositions relatives.', en: 'Write a short article about a film, book, concert or exhibition you liked. Use at least 4 relative clauses.', min: 60,
+wr: { fr: 'Écris un petit article sur un film, un livre, un concert ou une exposition que tu as aimé(e). Utilise au moins 4 propositions relatives.', en: 'Write a short article about a film, book, concert or exhibition you liked. Use at least 4 relative clauses.', min: 60,
   req: ['relative 1=, (der|die|das|den|dem|denen) ', 'relatives ×4=(, (der|die|das|den|dem|denen|in dem|in der|mit dem|mit der) .*){4}', 'passé=\\b(habe|hat|war|sind|bin)\\b', 'opinion=finde;gefällt;gefallen;spannend;beeindruckend;lustig;toll'],
   model: 'Letzte Woche habe ich einen Film gesehen, der mir sehr gut gefallen hat. Er heißt „Das Lehrerzimmer“. Es geht um eine junge Lehrerin, die an einer Schule in Deutschland arbeitet. In ihrer Klasse gibt es einen Schüler, den alle für einen Dieb halten. Die Lehrerin, der die Wahrheit sehr wichtig ist, will das Problem lösen. Aber alles wird immer schlimmer. Es ist ein Film, den ich wirklich spannend finde. Ich empfehle ihn allen, die gern Dramen sehen.' },
 pr: { fr: 'Dans la relative, la voix fait une petite pause à la virgule, puis continue jusqu’au verbe final qui est bien articulé : …, den ich gestern GESEHEN habe.', en: 'In the relative clause the voice makes a small pause at the comma, then carries on to the final verb, which is clearly stressed: …, den ich gestern geSEHen habe.',

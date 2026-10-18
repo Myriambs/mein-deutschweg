@@ -689,7 +689,7 @@ Billige Produkte haben oft einen hohen Preis für die Arbeiter. | Les produits b
 `,
 g: `
 Er ging, ohne sich ___ verabschieden. | zu | zu/dass/um | Il est parti sans dire au revoir. | He left without saying goodbye.
-Sie verließ das Haus, ohne ___ jemand es bemerkte. | dass | dass/zu/um | Elle a quitté la maison sans que personne ne le remarque. | She left the house without anyone noticing.
+Sie verließ das Haus, ohne ___ jemand es bemerkte. | dass | dass/zu/um | Elle a quitté la maison sans que personne le remarque. | She left the house without anyone noticing.
 ___ zu lernen, spielt er Videospiele. | Anstatt | Anstatt/Ohne/Um | Au lieu d’étudier, il joue aux jeux vidéo. | Instead of studying, he plays video games.
 Anstatt ___ die Firma investiert, entlässt sie Mitarbeiter. | dass | dass/zu/um | Au lieu d’investir, l’entreprise licencie des employés. | Instead of the company investing, it lays off employees.
 Die Reform wurde beschlossen, ohne dass die Bürger gefragt ___ wären. | worden | worden/geworden/werden | La réforme a été adoptée sans que les citoyens aient été consultés. | The reform was passed without the citizens having been asked.

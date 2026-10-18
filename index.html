@@ -235,6 +235,14 @@ code { background: var(--sunk); border-radius: 6px; padding: 1px 6px; font-size:
 .wk.ok { border-color: var(--good); }
 select, input[type=range] { width: 100%; max-width: 480px; font: inherit; padding: 8px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); color: var(--fg); }
 .lbl { font-weight: 700; }
+.tgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; }
+.tcard { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; display: grid; gap: 8px; align-content: start; min-width: 0; }
+.tcard h3 { font-size: 1.05rem; } .tcard p { color: var(--muted); font-size: 0.93rem; } .tcard a { color: var(--fg); }
+.chip[data-act="say"] { font-size: 0.95rem; padding: 6px 10px; }
+.letter { background: var(--sunk); border-radius: 10px; padding: 14px; }
+.task summary { font-weight: 700; }
+.task ol { margin: 0; padding-left: 1.2rem; }
+.punct { font-size: 1.2rem; }
 @media print {
   header.top, .steps, .todo, .row, .spread, .back, .title, .say { display: none !important; }
   body { background: #fff; } .sheet { box-shadow: none; }
@@ -253,5 +261,6 @@ select, input[type=range] { width: 100%; max-width: 480px; font: inherit; paddin
 <script src="data/b1-2.js"></script>
 <script src="data/b2-1.js"></script>
 <script src="data/b2-2.js"></script>
+<script src="data/tools.js"></script>
 </body>
 </html>
