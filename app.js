@@ -143,7 +143,7 @@ function say(text, rate) {
 }
 const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
 let rec = null, srBlocked = false; // srBlocked: the page may not use the microphone (e.g. inside claude.ai)
-const canHear = () => !!SR && !srBlocked;
+const canHear = () => !!SR && !srBlocked && navigator.onLine !== false; // phone speech recognition runs online
 function hear() {
   return new Promise(res => {
     if (!SR) return res({ err: 'unsupported' });
@@ -358,6 +358,7 @@ function homeView() {
   return `<main class="wrap stack">
     <div class="title"><p class="eyebrow">${L('De zéro à B2 en 4 mois', 'From zero to B2 in 4 months')}</p><h1>${L('Ton chemin vers l’allemand', 'Your road to German')}</h1></div>
     ${nextCard}
+    ${installBox(true)}
     <section class="planrow"><div><b>${t('plan')}</b><span>${planLine}</span>${bar(pi.done / pi.total * 100)}</div>
       <div class="row"><button class="btn ghost" data-act="plan">${t('plan')}</button><button class="btn ghost" data-act="mistakes">${t('mistakes')} (${nm})</button><button class="btn ghost" data-act="tools">${L('Boîte à outils', 'Toolbox')}</button></div></section>
     <section class="path">${LEVELS.map((lv, i) => levelCard(lv, i)).join('')}</section>
@@ -490,7 +491,7 @@ function quizView() {
   else if (q.t === 'speak') inner = `${q.ctx ? `<div class="ctx">${sayBtn(q.ctx.de)}<span><b>${esc(q.ctx.de)}</b><small>${esc(M(q.ctx))}</small></span></div>` : ''}
       ${q.open ? `<div class="ctx">${sayBtn(q.ask)}<b>${esc(q.ask)}</b></div><p class="sub">${esc(q.sub)}</p>` : `<p class="qtarget">${esc(q.target)} ${sayBtn(q.target)}</p><p class="sub">${esc(q.sub)}</p>`}
       <div class="mic-area">${canHear() ? `<button class="mic ${r.listening ? 'live' : ''}" data-act="mic" ${fb ? 'disabled' : ''}>🎙</button><span>${r.listening ? L('J’écoute… parle maintenant', 'Listening… speak now') : L('Appuie et parle', 'Press and speak')}</span>`
-        : `<p class="warn">${L('Le micro n’est pas disponible ici : dis la phrase à voix haute, écoute le modèle, puis note-toi honnêtement. Pour la correction automatique, ouvre myriambs.github.io/mein-deutschweg dans Chrome.', 'The microphone isn’t available here: say it out loud, listen to the model, then mark yourself honestly. For automatic checking, open myriambs.github.io/mein-deutschweg in Chrome.')}</p>${fb ? '' : `<div class="row"><button class="btn ghost" data-act="selfok">✓ ${L('Je l’ai bien dit', 'I said it right')}</button><button class="btn ghost" data-act="selfno">✗ ${L('J’ai fait des fautes', 'I made mistakes')}</button></div>`}`}</div>
+        : `<p class="warn">${navigator.onLine === false ? L('Pas d’internet : le micro ne peut pas vérifier. Dis la phrase à voix haute, écoute le modèle, puis note-toi honnêtement. Le micro revient dès que tu es reconnecté.', 'No internet: the microphone can’t check you. Say it out loud, listen to the model, then mark yourself honestly. The mic comes back as soon as you’re online.') : L('Le micro n’est pas disponible ici : dis la phrase à voix haute, écoute le modèle, puis note-toi honnêtement. Pour la correction automatique, ouvre myriambs.github.io/mein-deutschweg dans Chrome.', 'The microphone isn’t available here: say it out loud, listen to the model, then mark yourself honestly. For automatic checking, open myriambs.github.io/mein-deutschweg in Chrome.')}</p>${fb ? '' : `<div class="row"><button class="btn ghost" data-act="selfok">✓ ${L('Je l’ai bien dit', 'I said it right')}</button><button class="btn ghost" data-act="selfno">✗ ${L('J’ai fait des fautes', 'I made mistakes')}</button></div>`}`}</div>
       ${r.heard ? `<p class="heard">${L('Entendu', 'Heard')} : « ${esc(r.heard)} »</p>` : ''}`;
   else if (q.t === 'write') inner = `<section class="task"><h3>${esc(M(q.task))}</h3><p class="lede">${L('Minimum', 'At least')} ${q.task.min} ${L('mots', 'words')}. ${L('Points à inclure', 'Points to include')} : ${q.task.req.map(x => `<code>${esc(x.split('=')[0])}</code>`).join(' ')}</p></section>
       <textarea id="ans" class="ans big" lang="de" rows="8" spellcheck="false" ${fb || r.busy ? 'disabled' : ''} placeholder="${L('Écris ton texte en allemand…', 'Write your text in German…')}">${esc(r.given || '')}</textarea>
@@ -599,7 +600,7 @@ async function doMic() {
   const res = await hear();
   r.listening = false;
   if (res.err && /not-allowed|service-not-allowed|audio-capture|start|unsupported/.test(res.err)) { srBlocked = true; r.heard = ''; render(); return; }
-  if (res.err) { r.heard = res.err === 'not-allowed' ? L('Micro refusé : autorise le micro dans le navigateur.', 'Microphone blocked: allow it in your browser.') : res.err === 'no-speech' ? L('Je n’ai rien entendu. Réessaie plus près du micro.', 'I heard nothing. Try again closer to the mic.') : res.err; render(); return; }
+  if (res.err) { r.heard = res.err === 'not-allowed' ? L('Micro refusé : autorise le micro dans le navigateur.', 'Microphone blocked: allow it in your browser.') : res.err === 'no-speech' ? L('Je n’ai rien entendu. Réessaie plus près du micro.', 'I heard nothing. Try again closer to the mic.') : res.err === 'network' ? L('Le micro a besoin d’internet. Reconnecte-toi et réessaie.', 'The microphone check needs internet. Reconnect and try again.') : res.err; render(); return; }
   if (!res.alts.length) { r.heard = L('Je n’ai rien entendu.', 'I heard nothing.'); render(); return; }
   let g;
   if (q.open) {
@@ -709,6 +710,19 @@ function toolsView() {
   return `<main class="wrap stack"><button class="back" data-act="home">${t('back')}</button><div class="title"><h1>${L('Boîte à outils', 'Toolbox')}</h1></div>
     <nav class="row">${tabs.map(([k, n]) => `<button class="btn ${k === tab ? '' : 'ghost'}" data-act="tools" data-tab="${k}">${n}</button>`).join('')}</nav>${body}</main>`;
 }
+/* ---------------- install on phone / tablet ---------------- */
+let installEvt = null;
+const standalone = () => matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const canInstall = () => !window.claude && 'serviceWorker' in navigator && !standalone();
+function installBox(small) {
+  if (!canInstall() || (small && (S.hideInstall || !matchMedia('(pointer: coarse)').matches))) return '';
+  const how = installEvt ? `<div class="row"><button class="btn" data-act="install">${L('Installer l’application', 'Install the app')}</button>${small ? `<button class="btn ghost" data-act="hideinstall">${L('Plus tard', 'Later')}</button>` : ''}</div>`
+    : `<p>${isIOS() ? L('Dans Safari : touche <b>Partager</b> (le carré avec la flèche) puis <b>Sur l’écran d’accueil</b>.', 'In Safari: tap <b>Share</b> (the square with the arrow), then <b>Add to Home Screen</b>.')
+      : L('Dans Chrome : touche le menu <b>⋮</b> puis <b>Ajouter à l’écran d’accueil</b> (ou <b>Installer l’application</b>).', 'In Chrome: tap the <b>⋮</b> menu, then <b>Add to Home screen</b> (or <b>Install app</b>).')}</p>${small ? `<div class="row"><button class="btn ghost" data-act="hideinstall">${L('Compris', 'Got it')}</button></div>` : ''}`;
+  return `<section class="set"><h3>📱 ${L('Mets le cours sur ton téléphone', 'Put the course on your phone')}</h3>
+    <p class="sub">${L('Une icône sur l’écran d’accueil, plein écran, et les leçons marchent aussi sans internet (sauf le micro et la correction en ligne).', 'An icon on your home screen, full screen, and lessons work without internet too (except the mic and online correction).')}</p>${how}</section>`;
+}
 function settingsView() {
   const v = voice();
   return `<main class="wrap stack"><button class="back" data-act="home">${t('back')}</button><div class="title"><h1>${t('settings')}</h1></div>
@@ -719,6 +733,7 @@ function settingsView() {
       <label class="lbl" for="rate">${L('Vitesse', 'Speed')} : <b id="rv">${S.rate}</b></label><input id="rate" type="range" min="0.6" max="1.2" step="0.02" value="${S.rate}">
       <div class="row"><button class="btn ghost" data-act="say" data-t="Hallo! Ich heiße Clo. Schön, dass du Deutsch lernst.">🔊 ${L('Tester', 'Test')}</button></div></section>
     <section class="set"><h3>${L('Micro', 'Microphone')}</h3><p>${SR ? L('La reconnaissance vocale est disponible.', 'Speech recognition is available.') : L('Non disponible dans ce navigateur. Utilise Google Chrome ou Microsoft Edge.', 'Not available in this browser. Use Google Chrome or Microsoft Edge.')}</p></section>
+    ${installBox()}
     <section class="set"><h3>${L('Progression', 'Progress')}</h3><p class="sub">${L('Enregistrée dans ce navigateur', 'Saved in this browser')}${cloud ? L(' et dans ton compte Claude', ' and in your Claude account') : ''}.</p>
       ${V.confirm ? `<p class="warn">${L('Tout effacer ? Impossible d’annuler.', 'Erase everything? This cannot be undone.')}</p><div class="row"><button class="btn danger" data-act="reset">${L('Oui, tout effacer', 'Yes, erase all')}</button><button class="btn ghost" data-act="settings">${L('Annuler', 'Cancel')}</button></div>` : `<button class="btn ghost" data-act="askreset">${L('Remettre à zéro', 'Reset progress')}</button>`}</section></main>`;
 }
@@ -752,6 +767,8 @@ const ACT = {
   lang: () => { S.lang = S.lang === 'en' ? 'fr' : 'en'; save(); render(); },
   setlang: d => { S.lang = d.l; save(); render(); },
   settings: () => go({ view: 'settings' }),
+  install: async () => { if (!installEvt) return; installEvt.prompt(); try { await installEvt.userChoice; } catch (e) {} installEvt = null; render(); },
+  hideinstall: () => { S.hideInstall = true; save(); render(); },
   askreset: () => { V.confirm = true; render(); },
   reset: () => { const keep = { lang: S.lang, voice: S.voice, rate: S.rate }; S = Object.assign(DEF(), keep); save(); go({ view: 'home' }); },
   plan: () => go({ view: 'plan' }),
@@ -833,6 +850,12 @@ document.addEventListener('input', e => {
 });
 
 window.addEventListener('DOMContentLoaded', () => { render(); initCloud(); });
+// phone / tablet app: offline cache + install button (not inside claude.ai)
+if (canInstall() && /^https?:$/.test(location.protocol)) navigator.serviceWorker.register('sw.js').catch(() => {});
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; if (V.view === 'home' || V.view === 'settings') render(); });
+window.addEventListener('appinstalled', () => { installEvt = null; render(); });
+window.addEventListener('online', () => { if (RUN) render(); });
+window.addEventListener('offline', () => { if (RUN) render(); });
 // test hook (only with #dev in the address)
 if (location.hash === '#dev') window.__dw = { LEVELS, practiceFor, unitTest, examPart, sheetHTML, gradeText, matchScore, STEPS, PARTS, rx, go: v => go(v), startExamPart, unitById };
 })();

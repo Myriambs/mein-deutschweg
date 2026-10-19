@@ -4,6 +4,14 @@ A free German course from zero to B2 in 16 weeks, with explanations in French or
 
 **Open it:** https://myriambs.github.io/mein-deutschweg/ (use Google Chrome or Microsoft Edge for the German voice and the microphone)
 
+## On your phone or tablet
+
+Open the link, then:
+- **Android (Chrome):** tap the **Install the app** button on the home page, or ⋮ → **Add to Home screen**.
+- **iPhone / iPad (Safari):** tap **Share** → **Add to Home Screen**.
+
+You get an icon and a full-screen app. Lessons, notes, words, quizzes and the German voice work **without internet**. The microphone check and the online writing correction need internet; offline you mark yourself.
+
 ## What's inside
 
 - 8 levels (A1.1 → B2.2), 8 units each: 64 units, about 1,600 words, 770 phrases, 766 grammar drills.
@@ -13,7 +21,7 @@ A free German course from zero to B2 in 16 weeks, with explanations in French or
 
 ## How it works
 
-- `index.html`: page and styles. `app.js`: the engine. `data/*.js`: one file per level.
+- `index.html`: page and styles. `manifest.webmanifest`, `sw.js`, `icons/`: phone app and offline cache (bump `VERSION` in `sw.js` when you add files). `app.js`: the engine. `data/*.js`: one file per level.
 - Progress is saved in your browser (`localStorage`).
 - Writing is corrected with the free LanguageTool API (on the claude.ai version, Claude corrects it).
 - Audio uses your browser's German voice. Speaking uses the browser's speech recognition (Chrome / Edge).
