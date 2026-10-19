@@ -6,11 +6,9 @@ A free German course from zero to B2 in 16 weeks, with explanations in French or
 
 ## On your phone or tablet
 
-Open the link, then:
-- **Android (Chrome):** tap the **Install the app** button on the home page, or ⋮ → **Add to Home screen**.
-- **iPhone / iPad (Safari):** tap **Share** → **Add to Home Screen**.
+Just open the link in your phone's browser: the site adapts to phones and tablets. Once opened, lessons keep working even without internet (the microphone check and online writing correction need internet).
 
-You get an icon and a full-screen app. Lessons, notes, words, quizzes and the German voice work **without internet**. The microphone check and the online writing correction need internet; offline you mark yourself.
+Optional: Settings → *Home-screen shortcut* adds an icon to your home screen.
 
 ## What's inside
 

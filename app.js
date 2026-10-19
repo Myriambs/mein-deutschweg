@@ -358,7 +358,6 @@ function homeView() {
   return `<main class="wrap stack">
     <div class="title"><p class="eyebrow">${L('De zéro à B2 en 4 mois', 'From zero to B2 in 4 months')}</p><h1>${L('Ton chemin vers l’allemand', 'Your road to German')}</h1></div>
     ${nextCard}
-    ${installBox(true)}
     <section class="planrow"><div><b>${t('plan')}</b><span>${planLine}</span>${bar(pi.done / pi.total * 100)}</div>
       <div class="row"><button class="btn ghost" data-act="plan">${t('plan')}</button><button class="btn ghost" data-act="mistakes">${t('mistakes')} (${nm})</button><button class="btn ghost" data-act="tools">${L('Boîte à outils', 'Toolbox')}</button></div></section>
     <section class="path">${LEVELS.map((lv, i) => levelCard(lv, i)).join('')}</section>
@@ -715,12 +714,12 @@ let installEvt = null;
 const standalone = () => matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
 const isIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 const canInstall = () => !window.claude && 'serviceWorker' in navigator && !standalone();
-function installBox(small) {
-  if (!canInstall() || (small && (S.hideInstall || !matchMedia('(pointer: coarse)').matches))) return '';
-  const how = installEvt ? `<div class="row"><button class="btn" data-act="install">${L('Installer l’application', 'Install the app')}</button>${small ? `<button class="btn ghost" data-act="hideinstall">${L('Plus tard', 'Later')}</button>` : ''}</div>`
+function installBox() {
+  if (!canInstall()) return '';
+  const how = installEvt ? `<div class="row"><button class="btn" data-act="install">${L('Installer l’application', 'Install the app')}</button></div>`
     : `<p>${isIOS() ? L('Dans Safari : touche <b>Partager</b> (le carré avec la flèche) puis <b>Sur l’écran d’accueil</b>.', 'In Safari: tap <b>Share</b> (the square with the arrow), then <b>Add to Home Screen</b>.')
-      : L('Dans Chrome : touche le menu <b>⋮</b> puis <b>Ajouter à l’écran d’accueil</b> (ou <b>Installer l’application</b>).', 'In Chrome: tap the <b>⋮</b> menu, then <b>Add to Home screen</b> (or <b>Install app</b>).')}</p>${small ? `<div class="row"><button class="btn ghost" data-act="hideinstall">${L('Compris', 'Got it')}</button></div>` : ''}`;
-  return `<section class="set"><h3>📱 ${L('Mets le cours sur ton téléphone', 'Put the course on your phone')}</h3>
+      : L('Dans Chrome : touche le menu <b>⋮</b> puis <b>Ajouter à l’écran d’accueil</b> (ou <b>Installer l’application</b>).', 'In Chrome: tap the <b>⋮</b> menu, then <b>Add to Home screen</b> (or <b>Install app</b>).')}</p>`;
+  return `<section class="set"><h3>📱 ${L('Raccourci sur l’écran d’accueil (facultatif)', 'Home-screen shortcut (optional)')}</h3>
     <p class="sub">${L('Une icône sur l’écran d’accueil, plein écran, et les leçons marchent aussi sans internet (sauf le micro et la correction en ligne).', 'An icon on your home screen, full screen, and lessons work without internet too (except the mic and online correction).')}</p>${how}</section>`;
 }
 function settingsView() {
@@ -768,7 +767,6 @@ const ACT = {
   setlang: d => { S.lang = d.l; save(); render(); },
   settings: () => go({ view: 'settings' }),
   install: async () => { if (!installEvt) return; installEvt.prompt(); try { await installEvt.userChoice; } catch (e) {} installEvt = null; render(); },
-  hideinstall: () => { S.hideInstall = true; save(); render(); },
   askreset: () => { V.confirm = true; render(); },
   reset: () => { const keep = { lang: S.lang, voice: S.voice, rate: S.rate }; S = Object.assign(DEF(), keep); save(); go({ view: 'home' }); },
   plan: () => go({ view: 'plan' }),

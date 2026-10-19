@@ -1,7 +1,7 @@
 /* Mein Deutschweg offline cache.
    Course files are precached on install; every request is served from the cache first and refreshed in the background,
    so the app opens without internet and picks up new content on the next visit. Bump VERSION when the file list changes. */
-const VERSION = 'dw-v5-1';
+const VERSION = 'dw-v5-2';
 const FILES = ['./', 'index.html', 'app.js', 'manifest.webmanifest',
   'data/a1-1.js', 'data/a1-2.js', 'data/a2-1.js', 'data/a2-2.js', 'data/b1-1.js', 'data/b1-2.js', 'data/b2-1.js', 'data/b2-2.js', 'data/tools.js',
   'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-maskable-512.png', 'icons/apple-touch-icon.png', 'icons/favicon.png'];
